@@ -5,12 +5,13 @@ const router = express.Router();
 const passport = require("passport");
 const moment = require("moment");
 const http = require("http");
+const MongoClient = require("mongodb").MongoClient;
 const { Configuration, PlaidApi, PlaidEnvironments } = require("plaid");
 // import fetch from "node-fetch";
 // Load Account and User models
 const Account = require("../../models/Account");
 const User = require("../../models/User");
-
+const userURI = "mongodb+srv://claimyouraid:cya@cluster0.kfgzq.mongodb.net/";
 const configuration = new Configuration({
   basePath: PlaidEnvironments["sandbox"],
   baseOptions: {
@@ -122,38 +123,6 @@ router.post(
   }
 );
 
-// if (PUBLIC_TOKEN) {
-//   client
-//     .exchangePublicToken(PUBLIC_TOKEN) exchanging public token to access
-//     .then(exchangeResponse => {
-//       ACCESS_TOKEN = exchangeResponse.access_token; // res gives access token
-//       ITEM_ID = exchangeResponse.item_id;
-
-//       // Check if account already exists for specific user
-//       Account.findOne({
-//         userId: req.user.id,
-//         institutionId: institution_id
-//       })
-//         .then(account => {
-//           if (account) {
-//             console.log("Account already exists");
-//           } else {
-//             const newAccount = new Account({
-//               userId: userId,
-//               accessToken: ACCESS_TOKEN,
-//               itemId: ITEM_ID,
-//               institutionId: institution_id,
-//               institutionName: name
-//             });
-
-//             newAccount.save().then(account => res.json(account));
-//           }
-//         })
-//         .catch(err => console.log(err)); // Mongo Error
-//     })
-//     .catch(err => console.log(err)); // Plaid Error
-// }
-
 // @route DELETE api/plaid/accounts/:id
 // @desc Delete account with given id
 // @access Private
@@ -210,12 +179,34 @@ router.post(
     }
   }
 );
+const connectToCluster = async (uri) => {
+  try {
+    let mongoClient = new MongoClient(uri);
+    await mongoClient.connect();
+    return mongoClient;
+  } catch (err) {
+    console.error("Connection to MongoDB Atlas failed!", err);
+  }
+};
 // @route POST api/plaid/names
-// @desc Fetch names from all linked accounts
+// @desc Fetch names from all user linked accounts
 // @access Private
-router.get("/names", (req, res) => {
-  User.find().then((user) => {
-    res.json(user);
-  });
+router.get("/names", async (req, res) => {
+  try {
+    let mongoClient = await connectToCluster(userURI);
+    const db = mongoClient.db("Cluster0");
+    const collection = db.collection("users");
+
+    collection
+      .find()
+      .toArray()
+      .then((users) => {
+        res.json(users);
+      });
+
+    //await res.json(collection.find().toArray());
+  } catch (err) {
+    console.error("Failed to get names from MongoDB Atlas", err);
+  }
 });
 module.exports = router;

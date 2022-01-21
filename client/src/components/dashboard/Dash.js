@@ -19,8 +19,6 @@ const Dash = () => {
     axios.get("/api/plaid/names").then((response) => {
       response.data.forEach((usr) => {
         console.log(usr);
-        // var xyz = listname;
-        // xyz.push();
         setlistname((oldusr) => [...oldusr, usr.name]);
         console.log(listname);
       });
@@ -29,7 +27,7 @@ const Dash = () => {
 
   return (
     <div>
-      <h1> Welcome Admin</h1>
+      <b> Names of all the account holders</b>
       {listname && listname.map((usr) => <h3>{usr}</h3>)}
     </div>
   );
