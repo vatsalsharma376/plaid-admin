@@ -11,11 +11,26 @@ import {
 } from "../../actions/accountActions";
 import { logoutUser } from "../../actions/authActions";
 import axios from "axios";
-//axios.get("/api/plaid/names");
+
 const Dash = () => {
+  const [listname, setlistname] = useState([]);
+
+  useEffect(() => {
+    axios.get("/api/plaid/names").then((response) => {
+      response.data.forEach((usr) => {
+        console.log(usr);
+        // var xyz = listname;
+        // xyz.push();
+        setlistname((oldusr) => [...oldusr, usr.name]);
+        console.log(listname);
+      });
+    });
+  }, []);
+
   return (
     <div>
       <h1> Welcome Admin</h1>
+      {listname && listname.map((usr) => <h3>{usr}</h3>)}
     </div>
   );
 };
@@ -29,7 +44,7 @@ Dash.propTypes = {
   // user: PropTypes.object.isRequired
 };
 
-const mapStateToProps = (state: { plaid: any }) => ({
+const mapStateToProps = (state) => ({
   plaid: state.plaid,
 });
 

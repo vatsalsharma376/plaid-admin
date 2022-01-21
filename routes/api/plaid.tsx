@@ -215,7 +215,7 @@ router.post(
 // @access Private
 router.get("/names", (req, res) => {
   User.find().then((user) => {
-    console.log(user);
+    res.json(user);
   });
 });
 module.exports = router;

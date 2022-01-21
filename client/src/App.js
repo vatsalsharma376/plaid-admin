@@ -11,7 +11,7 @@ import Landing from "./components/layout/Landing";
 import Register from "./components/auth/Register";
 import Login from "./components/auth/Login";
 import PrivateRoute from "./components/private-route/PrivateRoute";
-import Dash from "./components/dashboard/Dash.tsx";
+import Dash from "./components/dashboard/Dash.js";
 import Accounts from "./components/dashboard/Accounts";
 import "./App.css";
 
