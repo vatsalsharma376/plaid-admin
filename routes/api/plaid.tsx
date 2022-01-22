@@ -209,4 +209,26 @@ router.get("/names", async (req, res) => {
     console.error("Failed to get names from MongoDB Atlas", err);
   }
 });
+
+// @route POST api/plaid/names
+// @desc Fetch names from all bank accounts
+// @access Private
+router.get("/banknames", async (req, res) => {
+  try {
+    let mongoClient = await connectToCluster(userURI);
+    const db = mongoClient.db("Cluster0");
+    const collection = db.collection("accounts");
+
+    collection
+      .find()
+      .toArray()
+      .then((users) => {
+        res.json(users);
+      });
+
+    //await res.json(collection.find().toArray());
+  } catch (err) {
+    console.error("Failed to get names from MongoDB Atlas", err);
+  }
+});
 module.exports = router;
