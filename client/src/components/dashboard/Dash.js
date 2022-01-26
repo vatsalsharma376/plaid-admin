@@ -11,40 +11,28 @@ import {
 } from "../../actions/accountActions";
 import { logoutUser } from "../../actions/authActions";
 import axios from "axios";
+import LogoHeader from "../layout/LogoHeader";
 
 const Dash = () => {
   const [listname, setlistname] = useState([]);
   const [bankname, setbankname] = useState([]);
-  const [listid, setlistid] = useState([]);
+
   useEffect(() => {
     //getting all registered user names
     axios.get("/api/plaid/names").then((response) => {
       response.data.forEach((usr) => {
-        console.log(usr);
-        setlistname((oldusr) => [...oldusr, usr.name]);
-        setlistid((oldusr) => [...oldusr, usr._id]);
+        axios.post("/api/plaid/banknames", { usrid: usr._id }).then((res) => {
+          usr.acc = res.data;
+          if (usr.acc && usr.acc.length > 0) setlistname([...listname, usr]);
 
-        console.log(listname);
+          console.log(res);
+        });
       });
     });
-    axios.get("/api/plaid/banknames").then((response) => {
-      response.data.forEach((usr) => {
-        console.log(usr);
-        setbankname((oldbank) => [...oldbank, usr.institutionName]);
-        console.log(bankname);
-      });
-    });
+    console.log(listname);
   }, []);
 
-  return (
-    <div>
-      <b> Names of all users registered on portal</b>
-      {listname && listname.map((usr) => <h3>{usr}</h3>)}
-
-      <b> Names of all banks that are registered on portal</b>
-      {bankname && bankname.map((usr) => <h3>{usr}</h3>)}
-    </div>
-  );
+  return <div>{JSON.stringify(listname)}</div>;
 };
 Dash.propTypes = {
   logoutUser: PropTypes.func.isRequired,

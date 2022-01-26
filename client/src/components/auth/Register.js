@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { registerUser } from "../../actions/authActions";
 import classnames from "classnames";
+import LogoHeader from "../layout/LogoHeader";
 
 class Register extends Component {
   constructor() {
@@ -13,7 +14,7 @@ class Register extends Component {
       email: "",
       password: "",
       password2: "",
-      errors: {}
+      errors: {},
     };
   }
 
@@ -27,23 +28,23 @@ class Register extends Component {
   componentWillReceiveProps(nextProps) {
     if (nextProps.errors) {
       this.setState({
-        errors: nextProps.errors
+        errors: nextProps.errors,
       });
     }
   }
 
-  onChange = e => {
+  onChange = (e) => {
     this.setState({ [e.target.id]: e.target.value });
   };
 
-  onSubmit = e => {
+  onSubmit = (e) => {
     e.preventDefault();
 
     const newUser = {
       name: this.state.name,
       email: this.state.email,
       password: this.state.password,
-      password2: this.state.password2
+      password2: this.state.password2,
     };
 
     this.props.registerUser(newUser, this.props.history);
@@ -59,17 +60,19 @@ class Register extends Component {
             <Link to="/" className="btn-flat waves-effect">
               <i className="material-icons left">keyboard_backspace</i> Back
             </Link>
-            <br/><br/>
+            <br />
+            <br />
             <div className="text-xl">
               <h4>
-                <b>Register</b> 
+                <b>Register</b>
               </h4>
-              
             </div>
-            <br/>
+            <br />
             <form noValidate onSubmit={this.onSubmit}>
               <div className="input-field col s12">
-                <label htmlFor="name" className="block mb-2 text-indigo-500">Name</label>
+                <label htmlFor="name" className="block mb-2 text-indigo-500">
+                  Name
+                </label>
 
                 <input
                   onChange={this.onChange}
@@ -77,14 +80,19 @@ class Register extends Component {
                   error={errors.name}
                   id="name"
                   type="text"
-                  className={classnames("w-full p-2 mb-6 text-indigo-700 border-b-2 border-indigo-500 outline-none focus:bg-gray-300", {
-                    invalid: errors.name
-                  })}
+                  className={classnames(
+                    "w-full p-2 mb-6 text-indigo-700 border-b-2 border-indigo-500 outline-none focus:bg-gray-300",
+                    {
+                      invalid: errors.name,
+                    }
+                  )}
                 />
                 <span className="text-red-600">{errors.name}</span>
               </div>
               <div className="input-field col s12">
-                <label htmlFor="email" className="block mb-2 text-indigo-500">Email</label>
+                <label htmlFor="email" className="block mb-2 text-indigo-500">
+                  Email
+                </label>
 
                 <input
                   onChange={this.onChange}
@@ -92,14 +100,22 @@ class Register extends Component {
                   error={errors.email}
                   id="email"
                   type="email"
-                  className={classnames("w-full p-2 mb-6 text-indigo-700 border-b-2 border-indigo-500 outline-none focus:bg-gray-300", {
-                    invalid: errors.email
-                  })}
+                  className={classnames(
+                    "w-full p-2 mb-6 text-indigo-700 border-b-2 border-indigo-500 outline-none focus:bg-gray-300",
+                    {
+                      invalid: errors.email,
+                    }
+                  )}
                 />
                 <span className="text-red-600">{errors.email}</span>
               </div>
               <div className="input-field col s12">
-                <label htmlFor="password" className="block mb-2 text-indigo-500">Password</label>
+                <label
+                  htmlFor="password"
+                  className="block mb-2 text-indigo-500"
+                >
+                  Password
+                </label>
 
                 <input
                   onChange={this.onChange}
@@ -107,14 +123,22 @@ class Register extends Component {
                   error={errors.password}
                   id="password"
                   type="password"
-                  className={classnames("w-full p-2 mb-6 text-indigo-700 border-b-2 border-indigo-500 outline-none focus:bg-gray-300", {
-                    invalid: errors.password
-                  })}
+                  className={classnames(
+                    "w-full p-2 mb-6 text-indigo-700 border-b-2 border-indigo-500 outline-none focus:bg-gray-300",
+                    {
+                      invalid: errors.password,
+                    }
+                  )}
                 />
                 <span className="text-red-600">{errors.password}</span>
               </div>
               <div className="input-field col s12">
-                <label htmlFor="password2" className="block mb-2 text-indigo-500">Confirm Password</label>
+                <label
+                  htmlFor="password2"
+                  className="block mb-2 text-indigo-500"
+                >
+                  Confirm Password
+                </label>
 
                 <input
                   onChange={this.onChange}
@@ -122,9 +146,12 @@ class Register extends Component {
                   error={errors.password2}
                   id="password2"
                   type="password"
-                  className={classnames("w-full p-2 mb-1 text-indigo-700 border-b-2 border-indigo-500 outline-none focus:bg-gray-300", {
-                    invalid: errors.password2
-                  })}
+                  className={classnames(
+                    "w-full p-2 mb-1 text-indigo-700 border-b-2 border-indigo-500 outline-none focus:bg-gray-300",
+                    {
+                      invalid: errors.password2,
+                    }
+                  )}
                 />
                 <span className="text-red-600">{errors.password2}</span>
               </div>
@@ -134,7 +161,7 @@ class Register extends Component {
                     width: "150px",
                     borderRadius: "3px",
                     letterSpacing: "1.5px",
-                    marginTop: "1rem"
+                    marginTop: "1rem",
                   }}
                   type="submit"
                   className="w-full bg-indigo-700 hover:bg-pink-700 text-white font-bold py-2 px-4 mb-1 rounded"
@@ -143,7 +170,13 @@ class Register extends Component {
                 </button>
               </div>
               <p className="grey-text text-darken-1">
-                Already have an account? <Link to="/login" className="text-indigo-700 hover:text-pink-700 text-lg">Log in</Link>
+                Already have an account?{" "}
+                <Link
+                  to="/login"
+                  className="text-indigo-700 hover:text-pink-700 text-lg"
+                >
+                  Log in
+                </Link>
               </p>
             </form>
           </div>
@@ -156,15 +189,12 @@ class Register extends Component {
 Register.propTypes = {
   registerUser: PropTypes.func.isRequired,
   auth: PropTypes.object.isRequired,
-  errors: PropTypes.object.isRequired
+  errors: PropTypes.object.isRequired,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   auth: state.auth,
-  errors: state.errors
+  errors: state.errors,
 });
 
-export default connect(
-  mapStateToProps,
-  { registerUser }
-)(withRouter(Register));
+export default connect(mapStateToProps, { registerUser })(withRouter(Register));

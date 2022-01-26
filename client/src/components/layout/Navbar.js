@@ -34,42 +34,6 @@ const Header = (props) => {
   //console.log("okay");
   return (
     <div className="flex flex-row">
-      <div id="header">
-        <IconContext.Provider
-          value={{ size: "30", className: "global-class-name" }}
-        >
-          {/* collapsed props to change menu size using menucollapse state */}
-          <ProSidebar collapsed={menuCollapse}>
-            <SidebarHeader>
-              <div className="logotext">
-                {/* small and big change using menucollapse state */}
-                <p>{menuCollapse ? "Plaid" : "Claimyouraid.com"}</p>
-              </div>
-            </SidebarHeader>
-            <SidebarContent>
-              <Menu iconShape="square">
-                {/* <MenuItem active={true} icon={<FiHome />}>
-                Home
-              </MenuItem> */}
-                <MenuItem
-                  icon={<AiOutlineDashboard />}
-                  onClick={() => setshowDash(true)}
-                >
-                  Dashboard
-                </MenuItem>
-
-                <MenuItem
-                  icon={<AiOutlineDollarCircle />}
-                  onClick={() => setshowDash(false)}
-                >
-                  Transactions
-                </MenuItem>
-              </Menu>
-            </SidebarContent>
-          </ProSidebar>
-        </IconContext.Provider>
-      </div>
-
       <div className="ri8">
         {showDash === true ? <Dash props={props} /> : <Template {...props} />}
       </div>

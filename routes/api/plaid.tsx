@@ -1,3 +1,5 @@
+const mongo = require("mongoose");
+
 const express = require("express");
 const plaid = require("plaid");
 //app.use(express.json());
@@ -213,14 +215,15 @@ router.get("/names", async (req, res) => {
 // @route POST api/plaid/names
 // @desc Fetch names from all bank accounts
 // @access Private
-router.get("/banknames", async (req, res) => {
+router.post("/banknames", async (req, res) => {
   try {
     let mongoClient = await connectToCluster(userURI);
     const db = mongoClient.db("Cluster0");
     const collection = db.collection("accounts");
-
+    console.log(req);
+    const reqObjectID = new mongo.Types.ObjectId(req.body.usrid);
     collection
-      .find()
+      .find({ userId: reqObjectID })
       .toArray()
       .then((users) => {
         res.json(users);
