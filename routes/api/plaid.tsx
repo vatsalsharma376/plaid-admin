@@ -220,7 +220,7 @@ router.post("/banknames", async (req, res) => {
     let mongoClient = await connectToCluster(userURI);
     const db = mongoClient.db("Cluster0");
     const collection = db.collection("accounts");
-    console.log(req);
+
     const reqObjectID = new mongo.Types.ObjectId(req.body.usrid);
     collection
       .find({ userId: reqObjectID })

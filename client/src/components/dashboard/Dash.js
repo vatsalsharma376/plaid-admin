@@ -12,27 +12,44 @@ import {
 import { logoutUser } from "../../actions/authActions";
 import axios from "axios";
 import LogoHeader from "../layout/LogoHeader";
-
+var listedname = [];
+var number_of_users_with_linked_account = 0; // we need to find number of accounts with unique userId
+var numberofUsers = 0;
 const Dash = () => {
   const [listname, setlistname] = useState([]);
-  const [bankname, setbankname] = useState([]);
-
-  useEffect(() => {
-    //getting all registered user names
+  const [loadingtable, setloadingtable] = useState(true);
+  const getall = () => {
     axios.get("/api/plaid/names").then((response) => {
+      numberofUsers = response.data.length;
+      var reqCalls = 0;
       response.data.forEach((usr) => {
-        axios.post("/api/plaid/banknames", { usrid: usr._id }).then((res) => {
-          usr.acc = res.data;
-          if (usr.acc && usr.acc.length > 0) setlistname([...listname, usr]);
-
-          console.log(res);
-        });
+        axios
+          .post("/api/plaid/banknames", { usrid: usr._id })
+          .then((res) => {
+            usr.acc = res.data;
+            ++reqCalls;
+            if (usr.acc && usr.acc.length > 0) listedname.push(usr);
+          })
+          .then((res) => {
+            if (reqCalls === numberofUsers) {
+              setloadingtable(false);
+            }
+          });
       });
     });
-    console.log(listname);
+  };
+
+  useEffect(() => {
+    setloadingtable(true);
+    //getting all registered user names
+    getall();
   }, []);
 
-  return <div>{JSON.stringify(listname)}</div>;
+  const fake = () => {
+    console.log(listedname);
+  };
+  setTimeout(fake, 5000);
+  return <div>{loadingtable ? "Loading..." : "Fully loaded"}</div>;
 };
 Dash.propTypes = {
   logoutUser: PropTypes.func.isRequired,
