@@ -3,10 +3,14 @@ import LogoHeader from "../layout/LogoHeader";
 
 const Choose = (props) => {
   const handleChange = (e) => {
+    const curst = props.location.state;
     if (e.target.value === "choose") {
       alert("Please select a choice");
     } else if (e.target.value === "txn") {
-      alert("Navigating to Transactions");
+      props.history.push({
+        pathname: "/tranx",
+        curst,
+      });
     } else if (e.target.value === "alert") {
       alert("Navigating to Alert");
     }
