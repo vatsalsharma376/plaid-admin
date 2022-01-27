@@ -33,7 +33,7 @@ const Header = (props) => {
   const [showDash, setshowDash] = useState(true);
   //console.log("okay");
   return (
-    <div className="flex flex-row">
+    <div className="flex flex-row settableright">
       <div className="ri8">
         {showDash === true ? <Dash props={props} /> : <Template {...props} />}
       </div>

@@ -38,6 +38,10 @@ code {
 }*/
 .hhw {
   flex: 1 0 70%;
+  align-items: end;
+  justify-content: end;
+  align-self: end;
+  justify-self: end;
   height: 100vh;
 }
 .lgot {

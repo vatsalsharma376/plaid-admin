@@ -12,12 +12,36 @@ import {
 import { logoutUser } from "../../actions/authActions";
 import axios from "axios";
 import LogoHeader from "../layout/LogoHeader";
+import UsracList from "./UsracList";
+import ReactPaginate from "react-paginate";
+import "./Dash.css";
 var listedname = [];
-var number_of_users_with_linked_account = 0; // we need to find number of accounts with unique userId
 var numberofUsers = 0;
 const Dash = () => {
   const [listname, setlistname] = useState([]);
   const [loadingtable, setloadingtable] = useState(true);
+  const [isItemloaded, setisItemloaded] = useState(false);
+  const [perPage, setperPage] = useState(5);
+  const [page, setpage] = useState(0);
+  const [numpage, setnumpage] = useState();
+  const [shownItems, setshownItems] = useState();
+  const populate = () => {
+    /*
+    [..., {,acc:[]}]
+    */
+    let items = listedname.slice(page * perPage, (page + 1) * perPage);
+    console.log(items);
+    let curshownItems = items.map((item) => {
+      return (
+        <tr key={item._id}>
+          <td>{item.name}</td>
+          <td>{"PLAID"}</td>
+          <td>{<UsracList acc={item} />}</td>
+        </tr>
+      );
+    });
+    setshownItems(curshownItems);
+  };
   const getall = () => {
     axios.get("/api/plaid/names").then((response) => {
       numberofUsers = response.data.length;
@@ -32,7 +56,11 @@ const Dash = () => {
           })
           .then((res) => {
             if (reqCalls === numberofUsers) {
+              setlistname(listedname);
               setloadingtable(false);
+              setperPage(5);
+              setnumpage(Math.ceil(listedname.length / perPage));
+              populate();
             }
           });
       });
@@ -42,14 +70,37 @@ const Dash = () => {
   useEffect(() => {
     setloadingtable(true);
     //getting all registered user names
-    getall();
-  }, []);
-
-  const fake = () => {
-    console.log(listedname);
+    if (listedname.length === 0) getall();
+    populate();
+  }, [page]);
+  const handlePageClick = (event) => {
+    setpage(event.selected);
   };
-  setTimeout(fake, 5000);
-  return <div>{loadingtable ? "Loading..." : "Fully loaded"}</div>;
+  return (
+    <>
+      <table
+        className="Table border border-green-500"
+        style={{ borderSpacing: "2000px" }}
+      >
+        <thead>
+          <tr>
+            <th>User name</th>
+            <th>Payroll</th>
+            <th>Linked account</th>
+          </tr>
+        </thead>
+        <tbody>{shownItems}</tbody>
+      </table>
+      <ReactPaginate
+        previousLabel={"prev"}
+        nextLabel={"next"}
+        pageCount={numpage}
+        onPageChange={handlePageClick}
+        containerClassName={"pagination"}
+        activeClassName={"active"}
+      />
+    </>
+  );
 };
 Dash.propTypes = {
   logoutUser: PropTypes.func.isRequired,
