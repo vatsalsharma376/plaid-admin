@@ -43,6 +43,7 @@ code {
   align-self: end;
   justify-self: end;
   height: 100vh;
+  width: 50%;
 }
 .lgot {
   margin-left: 20%;

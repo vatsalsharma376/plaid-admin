@@ -14,13 +14,13 @@ td {
   cursor: default;
   padding: 10px;
   border-radius: 5px;
-  border: 1px solid #6c7ac9;
-  color: #6c7ac9;
+  border: 1px solid #00b050;
+  color: #00b050;
   margin-left: 10px;
 }
 
 .pagination li:not(.disabled) a:hover {
-  background-color: bisque;
+  background-color: #9ef6c7;
   cursor: pointer;
 }
 
@@ -30,7 +30,7 @@ td {
 
 .pagination li.active a {
   color: #fff;
-  background: #6c7ac9;
+  background: #00b050;
 }
 
 .pagination li.disabled a {

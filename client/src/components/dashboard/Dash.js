@@ -58,7 +58,7 @@ const Dash = () => {
             if (reqCalls === numberofUsers) {
               setlistname(listedname);
               setloadingtable(false);
-              setperPage(5);
+
               setnumpage(Math.ceil(listedname.length / perPage));
               populate();
             }
@@ -80,7 +80,7 @@ const Dash = () => {
     <>
       <table
         className="Table border border-green-500"
-        style={{ borderSpacing: "2000px" }}
+        style={{ width: "100%" }}
       >
         <thead>
           <tr>
