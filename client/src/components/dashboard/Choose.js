@@ -17,7 +17,8 @@ const Choose = (props) => {
   };
   return (
     <>
-      <LogoHeader />
+      <LogoHeader right="Sign out" />
+
       <div className="ml-20">
         This is Client xxx {props.location.state.institutionName} Page:
         <br />

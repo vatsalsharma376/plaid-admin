@@ -68,7 +68,8 @@ const Template = (props) => {
   //console.log(props);
   return (
     <>
-      <LogoHeader />
+      <LogoHeader right="Sign out" />
+
       <div className="ml-20">
         This is Client xxx {accounts[0].institutionName} Page:
         <br />

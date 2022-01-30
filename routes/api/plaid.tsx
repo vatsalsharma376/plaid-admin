@@ -13,7 +13,8 @@ const { Configuration, PlaidApi, PlaidEnvironments } = require("plaid");
 // Load Account and User models
 const Account = require("../../models/Account");
 const User = require("../../models/User");
-const userURI = "mongodb+srv://claimyouraid:cya@cluster0.kfgzq.mongodb.net/";
+const userURI =
+  "mongodb+srv://claimyouraid:cya@cluster0.kfgzq.mongodb.net/?retryWrites=true&w=majority";
 const configuration = new Configuration({
   basePath: PlaidEnvironments["sandbox"],
   baseOptions: {
@@ -193,17 +194,21 @@ const connectToCluster = async (uri) => {
 // @route POST api/plaid/names
 // @desc Fetch names from all user linked accounts
 // @access Private
+let mongoClient1, db1, collection1;
 router.get("/names", async (req, res) => {
   try {
     let mongoClient = await connectToCluster(userURI);
     const db = mongoClient.db("Cluster0");
     const collection = db.collection("users");
+    collection1 = db.collection("accounts");
+    let time = Date.now();
 
     collection
       .find()
       .toArray()
       .then((users) => {
         res.json(users);
+        console.log(`Took ${Date.now() - time}ms to run part 1`);
       });
 
     //await res.json(collection.find().toArray());
@@ -215,15 +220,27 @@ router.get("/names", async (req, res) => {
 // @route POST api/plaid/names
 // @desc Fetch names from all bank accounts
 // @access Private
-router.post("/banknames", async (req, res) => {
+router.get("/banknames", async (req, res) => {
   try {
-    let mongoClient = await connectToCluster(userURI);
-    const db = mongoClient.db("Cluster0");
-    const collection = db.collection("accounts");
-
-    const reqObjectID = new mongo.Types.ObjectId(req.body.usrid);
+    // const reqObjectID = new mongo.Types.ObjectId(req.body.usrid);
+    collection1
+      .find()
+      .toArray()
+      .then((users) => {
+        res.json(users);
+      });
+    //await res.json(collection.find().toArray());
+  } catch (err) {
+    console.error("Failed to get names from MongoDB Atlas", err);
+  }
+});
+router.get("/checking", async (req, res) => {
+  let mongoClient2 = await connectToCluster(userURI);
+  const db = mongoClient2.db("Cluster0");
+  const collection = db.collection("users");
+  try {
     collection
-      .find({ userId: reqObjectID })
+      .find()
       .toArray()
       .then((users) => {
         res.json(users);

@@ -42,29 +42,44 @@ const Dash = () => {
     });
     setshownItems(curshownItems);
   };
-  const getall = () => {
-    axios.get("/api/plaid/names").then((response) => {
-      numberofUsers = response.data.length;
-      var reqCalls = 0;
-      response.data.forEach((usr) => {
-        axios
-          .post("/api/plaid/banknames", { usrid: usr._id })
-          .then((res) => {
-            usr.acc = res.data;
-            ++reqCalls;
-            if (usr.acc && usr.acc.length > 0) listedname.push(usr);
-          })
-          .then((res) => {
-            if (reqCalls === numberofUsers) {
-              setlistname(listedname);
-              setloadingtable(false);
-
-              setnumpage(Math.ceil(listedname.length / perPage));
-              populate();
-            }
-          });
-      });
+  const getall = async () => {
+    // axios.get("/api/plaid/names").then((response) => {
+    //   numberofUsers = response.data.length;
+    //   var reqCalls = 0;
+    //   response.data.forEach((usr) => {
+    //     axios
+    //       .post("/api/plaid/banknames", { usrid: usr._id })
+    //       .then((res) => {
+    //         usr.acc = res.data;
+    //         ++reqCalls;
+    //         if (usr.acc && usr.acc.length > 0) listedname.push(usr);
+    //       })
+    //       .then((res) => {
+    //         if (reqCalls === numberofUsers) {
+    //           setlistname(listedname);
+    //           setloadingtable(false);
+    //           setnumpage(Math.ceil(listedname.length / perPage));
+    //           populate();
+    //         }
+    //       });
+    //   });
+    // });
+    const users = await axios.get("/api/plaid/names");
+    const banks = await axios.get("/api/plaid/banknames");
+    const usersWithBanks = await users.data.map((user) => {
+      user.acc = [];
+      for (let i = 0; i < banks.data.length; i++) {
+        if (banks.data[i].userId == user._id) {
+          user.acc.push(banks.data[i]);
+        }
+      }
+      if (user.acc.length > 0) listedname.push(user);
     });
+
+    setlistname(listedname);
+    setloadingtable(false);
+    setnumpage(Math.ceil(listedname.length / perPage));
+    populate();
   };
 
   useEffect(() => {
