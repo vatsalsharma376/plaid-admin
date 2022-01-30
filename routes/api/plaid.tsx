@@ -26,33 +26,6 @@ const configuration = new Configuration({
 });
 
 const client = new PlaidApi(configuration);
-var uniq;
-
-router.post("/getid", (req, res) => {
-  uniq = req.body.id;
-});
-router.post("/create_link_token", async function (request, response) {
-  // Get the client_user_id by searching for the current user
-  // const user = await User.find(...); mongodb field _id unique
-  //const clientUserId = user.id; logged in user k liye key  db email pwd + id
-  const request1 = {
-    user: {
-      // This should correspond to a unique id for the current user.
-      client_user_id: uniq,
-    },
-    client_name: "Plaid Test App",
-    products: ["auth", "transactions"],
-    language: "en",
-    country_codes: ["us"],
-  };
-  try {
-    const createTokenResponse = await client.linkTokenCreate(request1);
-    await response.json(createTokenResponse.data);
-  } catch (error) {
-    // handle error
-    console.log(error.data);
-  }
-});
 
 var PUBLIC_TOKEN = null;
 var ACCESS_TOKEN = null;

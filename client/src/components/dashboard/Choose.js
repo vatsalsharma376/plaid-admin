@@ -9,7 +9,7 @@ const Choose = (props) => {
     } else if (e.target.value === "txn") {
       props.history.push({
         pathname: "/tranx",
-        curst,
+        state: curst,
       });
     } else if (e.target.value === "alert") {
       alert("Navigating to Alert");

@@ -35,7 +35,10 @@ const LogoHeader = (props) => {
             </div>
             <div
               style={{ cursor: "pointer" }}
-              onClick={() => store.dispatch(logoutUser())}
+              onClick={() => {
+                store.dispatch(logoutUser());
+                window.location.href = "./login";
+              }}
             >
               <b>{props && props.right ? props.right : ""}</b>
             </div>

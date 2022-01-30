@@ -14,6 +14,7 @@ import PrivateRoute from "./components/private-route/PrivateRoute";
 import Dash from "./components/dashboard/Dash.js";
 import Accounts from "./components/dashboard/Accounts";
 import Template from "./components/dashboard/Template";
+import Alerts from "./components/dashboard/Alerts";
 import Choose from "./components/dashboard/Choose";
 import "./App.css";
 
@@ -25,9 +26,6 @@ if (localStorage.jwtToken) {
   // Decode token and get user info and exp
   const decoded = jwt_decode(token);
   // Set user and isAuthenticated
-  axios.post("/api/plaid/getid", {
-    id: decoded.id,
-  });
   store.dispatch(setCurrentUser(decoded));
   // Check for expired token
   const currentTime = Date.now() / 1000; // to get in milliseconds
@@ -50,6 +48,7 @@ class App extends Component {
             <Route exact path="/login" component={Login} />
             <Route exact path="/tranx" component={Template} />
             <Route exact path="/choose" component={Choose} />
+            <Route exact path="/Alerts" component={Alerts} />
             <Switch>
               <PrivateRoute exact path="/dash" component={Accounts} />
             </Switch>

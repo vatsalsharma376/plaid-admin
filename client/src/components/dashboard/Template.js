@@ -27,15 +27,17 @@ const Template = (props) => {
   const [date1, setdate1] = useState("Choose a starting date");
   const [date2, setdate2] = useState("Choose an ending date");
   // }
-  const accounts = [props.location.curst];
+  const [accounts, setaccounts] = useState([props.location.state]);
+
   console.log(props);
-  useEffect(() => {
-    (async () => {
+  useEffect(
+    () => {
+      setaccounts([props.location.state]);
       axios
         .post("/api/plaid/accounts/transactions", accounts)
         .then((response) => {
           const transactions = response.data; // txn = [[]]
-          console.log(response);
+
           transactions.forEach(function (account) {
             account.transactions.forEach(function (transaction) {
               transactionsData.push({
@@ -51,9 +53,11 @@ const Template = (props) => {
           setLen(transactionsData.length);
           setshowtxn(transactionsData);
         });
-      //transactionsData.forEach((ex)=>console.log(ex)); works
-    })();
-  }, []);
+    },
+    //transactionsData.forEach((ex)=>console.log(ex)); works
+
+    []
+  );
 
   // Setting up data table
   const transactionsColumns = [
@@ -65,7 +69,7 @@ const Template = (props) => {
   //console.log(props.plaid);
 
   // transactionsData[0] -> object
-  //console.log(props);
+  console.log(props);
   return (
     <>
       <LogoHeader right="Sign out" />
