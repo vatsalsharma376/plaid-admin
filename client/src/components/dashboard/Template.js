@@ -52,6 +52,7 @@ const Template = (props) => {
           settxnloading(false);
           setLen(transactionsData.length);
           setshowtxn(transactionsData);
+          console.log(transactionsData);
         });
     },
     //transactionsData.forEach((ex)=>console.log(ex)); works
@@ -178,7 +179,7 @@ const Template = (props) => {
             }}
             className="w-full hover:bg-pink-700 text-white font-bold py-2 px-4 mb-4 rounded"
           >
-            <CSVLink data={transactionsData}>Export to Excel</CSVLink>
+            <CSVLink data={showtxn}>Export to Excel</CSVLink>
           </button>
           <button
             style={{
