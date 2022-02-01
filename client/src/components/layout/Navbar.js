@@ -34,7 +34,7 @@ const Header = (props) => {
   //console.log("okay");
   return (
     <div className="flex flex-row settableright">
-      <div className="ri8">
+      <div className="ri8" style={{ width: "50%" }}>
         {showDash === true ? <Dash props={props} /> : <Template {...props} />}
       </div>
     </div>

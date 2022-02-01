@@ -163,38 +163,38 @@ const Template = (props) => {
               data={showtxn}
               title="Transactions"
             />
+            <div
+              className="nextnav flex flex-row"
+              style={{ justifyContent: "space-evenly" }}
+            >
+              <button
+                style={{
+                  width: "200px",
+                  borderRadius: "3px",
+                  letterSpacing: "1.5px",
+                  marginTop: "1rem",
+                  backgroundColor: "#00B050",
+                }}
+                className="w-full hover:bg-pink-700 text-white font-bold py-2 px-4 mb-4 rounded"
+              >
+                <CSVLink data={showtxn}>Export to Excel</CSVLink>
+              </button>
+              <button
+                style={{
+                  width: "200px",
+                  borderRadius: "3px",
+                  letterSpacing: "1.5px",
+                  marginTop: "1rem",
+                  backgroundColor: "#00B050",
+                }}
+                type="submit"
+                className="w-full hover:bg-pink-700 text-white font-bold py-2 px-4 mb-4 rounded"
+              >
+                Alerts
+              </button>
+            </div>
           </>
         )}
-        <div
-          className="nextnav flex flex-row"
-          style={{ justifyContent: "space-evenly" }}
-        >
-          <button
-            style={{
-              width: "200px",
-              borderRadius: "3px",
-              letterSpacing: "1.5px",
-              marginTop: "1rem",
-              backgroundColor: "#00B050",
-            }}
-            className="w-full hover:bg-pink-700 text-white font-bold py-2 px-4 mb-4 rounded"
-          >
-            <CSVLink data={showtxn}>Export to Excel</CSVLink>
-          </button>
-          <button
-            style={{
-              width: "200px",
-              borderRadius: "3px",
-              letterSpacing: "1.5px",
-              marginTop: "1rem",
-              backgroundColor: "#00B050",
-            }}
-            type="submit"
-            className="w-full hover:bg-pink-700 text-white font-bold py-2 px-4 mb-4 rounded"
-          >
-            Alerts
-          </button>
-        </div>
       </div>
     </>
   );

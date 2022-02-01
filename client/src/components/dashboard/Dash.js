@@ -43,27 +43,6 @@ const Dash = () => {
     setshownItems(curshownItems);
   };
   const getall = async () => {
-    // axios.get("/api/plaid/names").then((response) => {
-    //   numberofUsers = response.data.length;
-    //   var reqCalls = 0;
-    //   response.data.forEach((usr) => {
-    //     axios
-    //       .post("/api/plaid/banknames", { usrid: usr._id })
-    //       .then((res) => {
-    //         usr.acc = res.data;
-    //         ++reqCalls;
-    //         if (usr.acc && usr.acc.length > 0) listedname.push(usr);
-    //       })
-    //       .then((res) => {
-    //         if (reqCalls === numberofUsers) {
-    //           setlistname(listedname);
-    //           setloadingtable(false);
-    //           setnumpage(Math.ceil(listedname.length / perPage));
-    //           populate();
-    //         }
-    //       });
-    //   });
-    // });
     const users = await axios.get("/api/plaid/names");
     const banks = await axios.get("/api/plaid/banknames");
     const usersWithBanks = await users.data.map((user) => {
@@ -94,10 +73,7 @@ const Dash = () => {
   return (
     <>
       <br />
-      <table
-        className="Table border border-green-500"
-        style={{ width: "100%" }}
-      >
+      <table className="Table " style={{ width: "100%" }}>
         <thead>
           <tr>
             <th>User name</th>
