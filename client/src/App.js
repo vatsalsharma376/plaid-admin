@@ -9,6 +9,8 @@ import store from "./store";
 import axios from "axios";
 import Landing from "./components/layout/Landing";
 import Register from "./components/auth/Register";
+import Register2 from "./components/auth/Register2";
+
 import Login from "./components/auth/Login";
 import PrivateRoute from "./components/private-route/PrivateRoute";
 import Dash from "./components/dashboard/Dash.js";
@@ -49,6 +51,7 @@ class App extends Component {
             <Route exact path="/tranx" component={Template} />
             <Route exact path="/choose" component={Choose} />
             <Route exact path="/Alerts" component={Alerts} />
+            <Route exact path="/register2" component={Register2} />
             <Switch>
               <PrivateRoute exact path="/dash" component={Accounts} />
             </Switch>

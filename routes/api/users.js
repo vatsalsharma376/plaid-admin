@@ -25,14 +25,16 @@ router.post("/register", (req, res) => {
     return res.status(400).json(errors);
   }
 
-  User.findOne({ email: req.body.email }).then(user => {
+  User.findOne({ email: req.body.email }).then((user) => {
     if (user) {
       return res.status(400).json({ email: "Email already exists" });
     } else {
       const newUser = new User({
-        name: req.body.name,
+        fname: req.body.fname,
+        lname: req.body.lname,
+        cell: req.body.cell,
         email: req.body.email,
-        password: req.body.password
+        password: req.body.password,
       });
 
       // Hash password before saving in database
@@ -42,8 +44,26 @@ router.post("/register", (req, res) => {
           newUser.password = hash;
           newUser
             .save()
-            .then(user => res.json(user))
-            .catch(err => console.log(err));
+            .then((user) => {
+              const payload = {
+                id: user.id,
+                name: user.name,
+              };
+              jwt.sign(
+                payload,
+                keys.secretOrKey,
+                {
+                  expiresIn: 31556926, // 1 year in seconds
+                },
+                (err, token) => {
+                  res.json({
+                    success: true,
+                    token: "Bearer " + token,
+                  });
+                }
+              );
+            })
+            .catch((err) => console.log(err));
         });
       });
     }
@@ -67,20 +87,20 @@ router.post("/login", (req, res) => {
   const password = req.body.password;
   //localStorage.setItem("email", email);
   // Find user by email
-  User.findOne({ email }).then(user => {
+  User.findOne({ email }).then((user) => {
     // Check if user exists
     if (!user) {
       return res.status(404).json({ emailnotfound: "Email not found" });
     }
 
     // Check password
-    bcrypt.compare(password, user.password).then(isMatch => {
+    bcrypt.compare(password, user.password).then((isMatch) => {
       if (isMatch) {
         // User matched
         // Create JWT Payload
         const payload = {
           id: user.id,
-          name: user.name
+          name: user.name,
         };
 
         // Sign token
@@ -88,12 +108,12 @@ router.post("/login", (req, res) => {
           payload,
           keys.secretOrKey,
           {
-            expiresIn: 31556926 // 1 year in seconds
+            expiresIn: 31556926, // 1 year in seconds
           },
           (err, token) => {
             res.json({
               success: true,
-              token: "Bearer " + token
+              token: "Bearer " + token,
             });
           }
         );
