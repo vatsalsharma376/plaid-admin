@@ -1,7 +1,10 @@
 import React from "react";
 import LogoHeader from "../layout/LogoHeader";
-
+import { useEffect } from "react";
 const Choose = (props) => {
+  useEffect(() => {
+    console.log(props);
+  }, []);
   const handleChange = (e) => {
     const curst = props.location.state;
     if (e.target.value === "choose") {
@@ -15,12 +18,19 @@ const Choose = (props) => {
       alert("Navigating to Alert");
     }
   };
+  var leftcrumb =
+    "Client > " +
+    props.location.state.companyId +
+    " > " +
+    props.location.state.institutionName;
   return (
     <>
-      <LogoHeader right="Sign out" />
+      <LogoHeader right="Sign out" left={leftcrumb} />
 
       <div className="ml-20">
-        This is Client xxx {props.location.state.institutionName} Page:
+        This is Client {props.location.state.companyId}
+        {"'s "}
+        {props.location.state.institutionName} Page:
         <br />
         <br />
         <p className="text-gray-500">

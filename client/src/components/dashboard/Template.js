@@ -70,13 +70,20 @@ const Template = (props) => {
   //console.log(props.plaid);
 
   // transactionsData[0] -> object
-  console.log(props);
+  var leftcrumb =
+    "Client > " +
+    props.location.state.companyId +
+    " > " +
+    props.location.state.institutionName +
+    " > Bank Transactions";
   return (
     <>
-      <LogoHeader right="Sign out" />
+      <LogoHeader right="Sign out" left={leftcrumb} />
 
       <div className="ml-20">
-        This is Client xxx {accounts[0].institutionName} Page:
+        This is Client {props.location.state.companyId}
+        {"'s "}
+        Transactions Page:
         <br />
         <br />
         <p className="text-gray-500">
