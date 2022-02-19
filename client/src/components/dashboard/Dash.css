@@ -1,7 +1,10 @@
 th,
 td {
   padding: 1rem;
-  text-align: center;
+  text-align: left;
+}
+th {
+  text-decoration: underline;
 }
 .pagination {
   display: flex;

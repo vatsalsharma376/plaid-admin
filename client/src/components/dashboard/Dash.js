@@ -34,8 +34,9 @@ const Dash = () => {
     let curshownItems = items.map((item) => {
       return (
         <tr key={item._id}>
-          <td>{item.name}</td>
-          <td>{"PLAID"}</td>
+          <td>{item.comp}</td>
+          <td>{item.fname}</td>
+          <td>{"ADP"}</td>
           <td>{<UsracList acc={item} />}</td>
         </tr>
       );
@@ -47,9 +48,11 @@ const Dash = () => {
     const banks = await axios.get("/api/plaid/banknames");
     const usersWithBanks = await users.data.map((user) => {
       user.acc = [];
+      user.comp = "";
       for (let i = 0; i < banks.data.length; i++) {
         if (banks.data[i].userId == user._id) {
           user.acc.push(banks.data[i]);
+          user.comp = banks.data[i].companyId;
         }
       }
       if (user.acc.length > 0) listedname.push(user);
@@ -76,9 +79,10 @@ const Dash = () => {
       <table className="Table " style={{ width: "100%" }}>
         <thead>
           <tr>
-            <th>User name</th>
-            <th>Payroll</th>
-            <th>Linked account</th>
+            <th>Client Name</th>
+            <th>Owner</th>
+            <th>Payroll System</th>
+            <th>Bank System</th>
           </tr>
         </thead>
         <tbody>{shownItems}</tbody>

@@ -167,13 +167,14 @@ const connectToCluster = async (uri) => {
 // @route POST api/plaid/names
 // @desc Fetch names from all user linked accounts
 // @access Private
-let mongoClient1, db1, collection1;
+let mongoClient1, db1, collection1, collection2;
 router.get("/names", async (req, res) => {
   try {
     let mongoClient = await connectToCluster(userURI);
     const db = mongoClient.db("Cluster0");
     const collection = db.collection("users");
     collection1 = db.collection("accounts");
+    //collection2 = db.collection("company");
     let time = Date.now();
 
     collection
@@ -207,6 +208,7 @@ router.get("/banknames", async (req, res) => {
     console.error("Failed to get names from MongoDB Atlas", err);
   }
 });
+
 router.get("/checking", async (req, res) => {
   let mongoClient2 = await connectToCluster(userURI);
   const db = mongoClient2.db("Cluster0");
