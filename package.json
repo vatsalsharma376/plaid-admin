@@ -17,6 +17,7 @@
   "license": "MIT",
   "dependencies": {
     "@craco/craco": "^6.4.0",
+    "@sendgrid/mail": "^7.6.1",
     "@types/react": "^17.0.36",
     "axios": "^0.24.0",
     "babel-eslint": "^9.0.0",
@@ -31,6 +32,7 @@
     "moment": "^2.23.0",
     "mongodb": "^4.3.1",
     "mongoose": "^5.3.11",
+    "node-cron": "^3.0.0",
     "node-fetch": "^3.1.1",
     "nodemon": "^2.0.14",
     "passport": "^0.4.0",
@@ -41,7 +43,9 @@
     "react-plaid-link": "^3.2.1",
     "react-pro-sidebar": "^0.7.1",
     "react-scripts": "^4.0.3",
-    "validator": "^10.9.0"
+    "twilio": "^3.75.0",
+    "validator": "^10.9.0",
+    "zustand": "^3.7.0"
   },
   "devDependencies": {
     "autoprefixer": "^9.8.8",

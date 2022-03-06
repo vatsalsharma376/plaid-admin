@@ -17,6 +17,8 @@ import Dash from "./components/dashboard/Dash.js";
 import Accounts from "./components/dashboard/Accounts";
 import Template from "./components/dashboard/Template";
 import Alerts from "./components/dashboard/Alerts";
+import AlertsML from "./components/dashboard/AlertsML";
+import AlertsSMS from "./components/dashboard/AlertsSMS";
 import Choose from "./components/dashboard/Choose";
 import "./App.css";
 
@@ -50,8 +52,11 @@ class App extends Component {
             <Route exact path="/login" component={Login} />
             <Route exact path="/tranx" component={Template} />
             <Route exact path="/choose" component={Choose} />
-            <Route exact path="/Alerts" component={Alerts} />
+            <Route exact path="/alerts" component={Alerts} />
             <Route exact path="/register2" component={Register2} />
+            <Route exact path="/alertmail" component={AlertsML} />
+            <Route exact path="/alertsms" component={AlertsSMS} />
+
             <Switch>
               <PrivateRoute exact path="/dash" component={Accounts} />
             </Switch>

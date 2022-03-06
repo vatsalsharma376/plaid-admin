@@ -2,6 +2,8 @@ const mongo = require("mongoose");
 
 const express = require("express");
 const plaid = require("plaid");
+const twilio = require("twilio");
+
 //app.use(express.json());
 const router = express.Router();
 const passport = require("passport");
@@ -13,6 +15,12 @@ const { Configuration, PlaidApi, PlaidEnvironments } = require("plaid");
 // Load Account and User models
 const Account = require("../../models/Account");
 const User = require("../../models/User");
+const Alerts = require("../../models/Alerts");
+const sgMail = require("@sendgrid/mail");
+sgMail.setApiKey(
+  "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"
+);
+
 const userURI =
   "mongodb+srv://claimyouraid:cya@cluster0.kfgzq.mongodb.net/?retryWrites=true&w=majority";
 const configuration = new Configuration({
@@ -30,7 +38,9 @@ const client = new PlaidApi(configuration);
 var PUBLIC_TOKEN = null;
 var ACCESS_TOKEN = null;
 var ITEM_ID = null;
-
+const accountSid = "AC7bcbf56ba60248d401cee60239c3848d";
+const authToken = "6d0c684084afe05b96374b1d05c81cfe";
+const twclient = require("twilio")(accountSid, authToken);
 // @route GET api/plaid/accounts
 // @desc Get all accounts linked with plaid for a specific user
 // @access Private
@@ -168,13 +178,17 @@ const connectToCluster = async (uri) => {
 // @desc Fetch names from all user linked accounts
 // @access Private
 let mongoClient1, db1, collection1, collection2;
+let alertcoll;
 router.get("/names", async (req, res) => {
   try {
     let mongoClient = await connectToCluster(userURI);
     const db = mongoClient.db("Cluster0");
+    const db1 = mongoClient.db("Cluster1");
     const collection = db.collection("users");
     collection1 = db.collection("accounts");
     //collection2 = db.collection("company");
+    alertcoll = db1.collection("alerts");
+
     let time = Date.now();
 
     collection
@@ -209,21 +223,94 @@ router.get("/banknames", async (req, res) => {
   }
 });
 
-router.get("/checking", async (req, res) => {
-  let mongoClient2 = await connectToCluster(userURI);
-  const db = mongoClient2.db("Cluster0");
-  const collection = db.collection("users");
+// @route POST api/plaid/add
+// @desc Add all alerts to the database which will be monitored
+// @access Private
+router.post("/addAlert", async (req, res) => {
   try {
-    collection
+    alertcoll.findOne({ accessToken: req.body.accessToken }).then((alert) => {
+      //console.log(typeof req.body.accessToken);
+      alertcoll.remove({ accessToken: req.body.accessToken });
+      //console.log(alert);
+      const newAlert = new Alerts(req.body);
+      newAlert.save();
+    });
+  } catch (err) {
+    console.error("Failed to insert alerts in database", err);
+  }
+});
+
+router.get("/makealert", async (req, res) => {
+  try {
+    alertcoll
       .find()
       .toArray()
-      .then((users) => {
-        res.json(users);
+      .then((alert) => {
+        // now here we have an array of alerts and we have to perform the twilio things for each of them
+        const now = moment();
+        const today = now.format("YYYY-MM-DD");
+        for (var ind = 0; ind < alert.length; ind++) {
+          const curAccessToken = alert[ind].accessToken;
+          const AMOUNT = alert[ind].amount;
+          const MSG = alert[ind].message;
+          const EMAIL = alert[ind].email;
+          const CELL = alert[ind].cell;
+          const FNAME = alert[ind].fname;
+          const CLIENTNAME = alert[ind].clientname;
+          const TXTBODY = alert[ind].fullTXTmessage;
+          const txnreq = {
+            access_token: curAccessToken,
+            start_date: alert[ind].lasttxn,
+            end_date: today,
+          };
+          client
+            .transactionsGet(txnreq)
+            .then((response) => {
+              const transactions = response.data.transactions;
+              //console.log(response.data);
+              for (var counter = 0; counter < transactions.length; counter++) {
+                var transaction = transactions[counter];
+                //console.log(transaction.amount);
+                if (
+                  Math.abs(transaction.amount) >= AMOUNT ||
+                  transaction.name.indexOf(MSG) != -1
+                ) {
+                  if (CELL !== undefined) {
+                    // twclient.messages
+                    //   .create({
+                    //     body: TXTBODY,
+                    //     from: "+17406854671",
+                    //     to: CELL,
+                    //   })
+                    //   .then((message) => console.log(message.sid))
+                    //   .catch((err) => console.log("Twilio error here", err));
+                  }
+                  if (EMAIL !== undefined) {
+                    const msg = {
+                      to: "vatsalsharma376@yahoo.com", // Change to your recipient
+                      from: "claimyouraid3@gmail.com", // Change to your verified sender
+                      subject: "New transaction recieved from Claimyouraid",
+                      text: "and easy to do anywhere, even with Node.js",
+                      html: "<strong>and easy to do anywhere, even with Node.js</strong>",
+                    };
+                    sgMail
+                      .send(msg)
+                      .then((response) => {
+                        console.log(response[0].statusCode);
+                        console.log(response[0].headers);
+                      })
+                      .catch((error) => {
+                        console.error(error.response.body.errors[0]);
+                      });
+                  }
+                }
+              }
+            })
+            .catch((err) => console.log("Transactions fetching error: ", err));
+        }
       });
-
-    //await res.json(collection.find().toArray());
   } catch (err) {
-    console.error("Failed to get names from MongoDB Atlas", err);
+    console.error("Failed to make alerts in database", err);
   }
 });
 module.exports = router;

@@ -15,7 +15,10 @@ const Choose = (props) => {
         state: curst,
       });
     } else if (e.target.value === "alert") {
-      alert("Navigating to Alert");
+      props.history.push({
+        pathname: "/alerts",
+        state: curst,
+      });
     }
   };
   var leftcrumb =
