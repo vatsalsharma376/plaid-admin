@@ -17,6 +17,7 @@ import "react-calendar/dist/Calendar.css";
 import LogoHeader from "../layout/LogoHeader";
 import { CSVLink, CSVDownload } from "react-csv";
 const Template = (props) => {
+  const curst = props.location.state;
   let transactionsData = [];
   const [len, setLen] = useState(0);
   const [showtxn, setshowtxn] = useState([{}]);
@@ -76,6 +77,13 @@ const Template = (props) => {
     " > " +
     props.location.state.institutionName +
     " > Bank Transactions";
+  const handleClick = () => {
+    //e.preventDefault();
+    props.history.push({
+      pathname: "/alerts",
+      state: curst,
+    });
+  };
   return (
     <>
       <LogoHeader right="Sign out" left={leftcrumb} />
@@ -196,6 +204,7 @@ const Template = (props) => {
                 }}
                 type="submit"
                 className="w-full hover:bg-pink-700 text-white font-bold py-2 px-4 mb-4 rounded"
+                onClick={() => handleClick()}
               >
                 Alerts
               </button>

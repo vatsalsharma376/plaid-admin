@@ -3,6 +3,9 @@ import LogoHeader from "../layout/LogoHeader";
 import moment from "moment";
 import axios from "axios";
 import { useState } from "react";
+import "./Dash.css";
+import { Fragment } from "react";
+const space = <Fragment>&nbsp;&nbsp;&nbsp;&nbsp;</Fragment>
 const borderColor = "#A2C987";
 
 const Alerts = (props) => {
@@ -76,17 +79,26 @@ const Alerts = (props) => {
     <>
       <LogoHeader left={leftcrumb} right="Sign out" />
 
-      <div className="ml-20">
+      <div className="ml-20" >
+      <div style={{fontSize : "20px" }}>
         This is Client {props.location.state.companyId}
         {"'s "}
-        Bank Alert page:
+        Bank Alert page: 
         <br />
-        1) Get notified when a payment comes in for a specific amount:
+        <br></br>
+        <span className="p1">
+          <span style={{color : "grey"}}>
+           1) Get notified when a payment comes in for a specific amount:</span></span>
         <br />
         <br />
         <b>Amount:</b> <br />
         <input
-          style={{ borderColor: borderColor }}
+          style={{
+           width :"500px", 
+           border : "2px solid #00b050"
+           
+          }}
+          
           required
           type="text"
           name="amount"
@@ -95,12 +107,17 @@ const Alerts = (props) => {
           onChange={(e) => setAmount(e.target.value)}
         />
         <br />
+        <br></br>
+        <br></br>
+
         2) Get notified when a bank deposit includes the following description:{" "}
         <br />
         <br />
         <b>Description:</b> <br />
         <input
-          style={{ borderColor: borderColor }}
+          style={{ width :"500px",
+          border : "2px solid #00b050"
+        }}
           required
           type="text"
           name="desc"
@@ -109,10 +126,20 @@ const Alerts = (props) => {
           onChange={(e) => setMessage(e.target.value)}
         />
         <br />
-        Email: {email}
-        <input type="checkbox" onChange={() => setMailcheck(!mailcheck)} />
-        Cell: {cell}
-        <input type="checkbox" onChange={() => setCellcheck(!cellcheck)} />
+        <br></br><br></br>
+        <b>TextMessage: {space}{space}{space}{space}{space}
+        Email: </b> 
+        <br></br>
+        <input type="checkbox"
+        style={{border : "2px solid #00b050"}}
+         onChange={() => setCellcheck(!cellcheck)} /> {cell}
+        {space}{space}{space}{space}{space}
+        <input type="checkbox"
+        style={{border : "2px solid #00b050"}}
+         onChange={() => setMailcheck(!mailcheck)} />
+        {email}
+        
+        
         <br />
         <button
           style={{
@@ -128,6 +155,7 @@ const Alerts = (props) => {
           <center>Update Alerts</center>
         </button>
       </div>
+      </div> 
     </>
   );
 };
