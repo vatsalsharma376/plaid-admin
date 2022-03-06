@@ -32,6 +32,9 @@ const AlertsSchema = new Schema({
   fullTXTmessage: {
     type: String,
   },
+  lasttxndone: {
+    type: Number,
+  },
 });
 
 module.exports = Alerts = mongoose.model("alerts", AlertsSchema);

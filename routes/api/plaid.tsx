@@ -18,7 +18,7 @@ const User = require("../../models/User");
 const Alerts = require("../../models/Alerts");
 const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(
-  "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"
+  "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"
 );
 
 const userURI =
@@ -38,8 +38,8 @@ const client = new PlaidApi(configuration);
 var PUBLIC_TOKEN = null;
 var ACCESS_TOKEN = null;
 var ITEM_ID = null;
-const accountSid = "AC7bcbf56ba60248d401cee60239c3848d";
-const authToken = "6d0c684084afe05b96374b1d05c81cfe";
+const accountSid = "ACd092381d0c8cc04422e65e019416b32f";
+const authToken = "05ef855841167757b72f25dcf93c0131";
 const twclient = require("twilio")(accountSid, authToken);
 // @route GET api/plaid/accounts
 // @desc Get all accounts linked with plaid for a specific user
@@ -182,12 +182,13 @@ let alertcoll;
 router.get("/names", async (req, res) => {
   try {
     let mongoClient = await connectToCluster(userURI);
+    db1 = mongoClient.db("Cluster1");
+    alertcoll = db1.collection("alerts");
+
     const db = mongoClient.db("Cluster0");
-    const db1 = mongoClient.db("Cluster1");
     const collection = db.collection("users");
     collection1 = db.collection("accounts");
     //collection2 = db.collection("company");
-    alertcoll = db1.collection("alerts");
 
     let time = Date.now();
 
@@ -232,7 +233,9 @@ router.post("/addAlert", async (req, res) => {
       //console.log(typeof req.body.accessToken);
       alertcoll.remove({ accessToken: req.body.accessToken });
       //console.log(alert);
-      const newAlert = new Alerts(req.body);
+      var reqbd = req.body;
+      if (reqbd.lasttxndone === undefined) reqbd.lasttxndone = 0;
+      const newAlert = new Alerts(reqbd);
       newAlert.save();
     });
   } catch (err) {
@@ -242,10 +245,14 @@ router.post("/addAlert", async (req, res) => {
 
 router.get("/makealert", async (req, res) => {
   try {
+    let mongoClient = await connectToCluster(userURI);
+    db1 = mongoClient.db("Cluster1");
+    alertcoll = db1.collection("alerts");
     alertcoll
       .find()
       .toArray()
       .then((alert) => {
+        //console.log(alert);
         // now here we have an array of alerts and we have to perform the twilio things for each of them
         const now = moment();
         const today = now.format("YYYY-MM-DD");
@@ -257,10 +264,18 @@ router.get("/makealert", async (req, res) => {
           const CELL = alert[ind].cell;
           const FNAME = alert[ind].fname;
           const CLIENTNAME = alert[ind].clientname;
-          const TXTBODY = alert[ind].fullTXTmessage;
+          var TXTBODY = alert[ind].fullTXTmessage;
+          var MLBODY = alert[ind].fullMLmessage;
+          console.log(curAccessToken, alert[ind].lasttxn);
+          //console.log(TXTBODY, MLBODY);
+          const OFFSET =
+            alert[ind].lasttxndone === undefined ? 0 : alert[ind].lasttxndone;
+          //const thirtyDaysAgo = now.subtract(2, "days").format("YYYY-MM-DD");
+          // const OFFSET = 0;
+          var NEWOFFSET=0;
           const txnreq = {
             access_token: curAccessToken,
-            start_date: alert[ind].lasttxn,
+            start_date: "2022-03-05",
             end_date: today,
           };
           client
@@ -268,36 +283,64 @@ router.get("/makealert", async (req, res) => {
             .then((response) => {
               const transactions = response.data.transactions;
               //console.log(response.data);
-              for (var counter = 0; counter < transactions.length; counter++) {
+              //console.log(transactions.length);
+              for (
+                var counter = transactions.length - 1 - OFFSET;
+                counter >= 0;
+                counter--
+              ) {
                 var transaction = transactions[counter];
+                if (today == transaction.date) ++NEWOFFSET;
                 //console.log(transaction.amount);
+                TXTBODY = TXTBODY.replace("<<Deposit Date>>", transaction.date);
+                TXTBODY = TXTBODY.replace(
+                  "<<Deposit Amount>>",
+                  transaction.amount
+                );
+                TXTBODY = TXTBODY.replace(
+                  "<<Deposit Description>>",
+                  transaction.name
+                );
+                MLBODY = MLBODY.replace("<<Deposit Date>>", transaction.date);
+                MLBODY = MLBODY.replace(
+                  "<<Deposit Amount>>",
+                  transaction.amount
+                );
+                MLBODY = MLBODY.replace(
+                  "<<Deposit Description>>",
+                  transaction.name
+                );
+                console.log(TXTBODY, MLBODY);
+                console.log(
+                  transaction.name,
+                  transaction.date,
+                  transaction.amount
+                );
                 if (
                   Math.abs(transaction.amount) >= AMOUNT ||
                   transaction.name.indexOf(MSG) != -1
                 ) {
                   if (CELL !== undefined) {
-                    // twclient.messages
-                    //   .create({
-                    //     body: TXTBODY,
-                    //     from: "+17406854671",
-                    //     to: CELL,
-                    //   })
-                    //   .then((message) => console.log(message.sid))
-                    //   .catch((err) => console.log("Twilio error here", err));
+                    twclient.messages
+                      .create({
+                        body: TXTBODY,
+                        from: "+13515298183",
+                        to: CELL,
+                      })
+                      .then((message) => console.log(message.sid))
+                      .catch((err) => console.log("Twilio error here", err));
                   }
                   if (EMAIL !== undefined) {
                     const msg = {
-                      to: "vatsalsharma376@yahoo.com", // Change to your recipient
-                      from: "claimyouraid3@gmail.com", // Change to your verified sender
-                      subject: "New transaction recieved from Claimyouraid",
-                      text: "and easy to do anywhere, even with Node.js",
-                      html: "<strong>and easy to do anywhere, even with Node.js</strong>",
+                      to: EMAIL, // Change to your recipient
+                      from: "claimyouraids@gmail.com", // Change to your verified sender
+                      subject: "Alert: New transaction recieved",
+                      text: MLBODY,
                     };
                     sgMail
                       .send(msg)
                       .then((response) => {
                         console.log(response[0].statusCode);
-                        console.log(response[0].headers);
                       })
                       .catch((error) => {
                         console.error(error.response.body.errors[0]);
@@ -307,6 +350,21 @@ router.get("/makealert", async (req, res) => {
               }
             })
             .catch((err) => console.log("Transactions fetching error: ", err));
+          // update the alert after sending current alerts
+          var prevAlert = alert[ind];
+          prevAlert.lasttxndone = NEWOFFSET;
+          prevAlert.lasttxn = today;
+          alertcoll.remove({ accessToken: curAccessToken });
+
+          const newAlert = new Alerts(prevAlert);
+          newAlert
+            .save()
+            .then((response) => {
+              console.log("Successfully updated alert");
+            })
+            .catch((error) => {
+              console.log("Error updating alert",error);
+            });
         }
       });
   } catch (err) {
