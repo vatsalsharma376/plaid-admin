@@ -42,10 +42,10 @@ app.listen(port, () => console.log(`Server up and running on port ${port} !`));
 // cron.schedule("* * * * *", () => {
 //   console.log("running a task every minute");
 // });
-var currr = 1;
-cron.schedule("* * * * *", () => {
-  console.log("running a task every minute", currr++);
-  axios.get("http://localhost:5006/api/plaid/makealert").then((res) => {
-    console.log(res);
-  });
-});
+// var currr = 1;
+// cron.schedule("* * * * *", () => {
+//   console.log("running a task every minute", currr++);
+//   axios.get("http://localhost:5006/api/plaid/makealert").then((res) => {
+//     console.log(res);
+//   });
+// });
