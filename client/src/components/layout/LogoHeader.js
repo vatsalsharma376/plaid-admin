@@ -1,9 +1,25 @@
 import React from "react";
+import { useState } from "react";
+
 import logo from "../../img/logo.png";
 import store from "../../../src/store";
 import { logoutUser } from "../../../src/actions/authActions";
 const LogoHeader = (props) => {
+  const [hover1, sethover1] = useState("normal");
+  const [hover2, sethover2] = useState("normal");
+  const [hover3, sethover3] = useState("normal");
+
+  const pprops = props.ori;
   //console.log(props);
+  /*onClick={
+          props.ori
+            ? () =>
+                props.ori.history.push({
+                  pathname: "/alerts",
+                  state: props.ori.location.state,
+                })
+            : console.log(props)
+        } */
   const style1 = {
     background: "#00B050",
     paddingTop: "0.5rem",
@@ -30,8 +46,46 @@ const LogoHeader = (props) => {
               margin: "auto",
             }}
           >
-            <div className="ml-12 text-gray-300">
-              <b>{props && props.left}</b>
+            <div className="ml-12 text-gray-300 flex flex-row">
+              <div
+                onMouseEnter={() => sethover1("bold")}
+                onMouseLeave={() => sethover1("normal")}
+                style={{ cursor: "pointer", fontWeight: hover1 }}
+                onClick={() => {
+                  props.ori.history.push({
+                    pathname: "/dash",
+                  });
+                }}
+              >
+                {props.leftc ? props.leftc : ""}
+              </div>
+              <div
+                onMouseEnter={() => sethover2("bold")}
+                onMouseLeave={() => sethover2("normal")}
+                style={{ cursor: "pointer", fontWeight: hover2 }}
+                onClick={() => {
+                  pprops.history.push({
+                    pathname: "/choose",
+                    state: pprops.location.state,
+                  });
+                }}
+              >
+                {props.bankc ? props.bankc : ""}
+              </div>
+              <div
+                onMouseEnter={() => sethover3("bold")}
+                onMouseLeave={() => sethover3("normal")}
+                style={{ cursor: "pointer", fontWeight: hover3 }}
+                onClick={() => {
+                  pprops.history.push({
+                    pathname: "/alerts",
+                    state: pprops.location.state,
+                  });
+                }}
+              >
+                {props.alertc ? props.alertc : ""}
+              </div>
+              <div>{props.curc ? props.curc : ""}</div>
             </div>
             <div
               style={{ cursor: "pointer" }}

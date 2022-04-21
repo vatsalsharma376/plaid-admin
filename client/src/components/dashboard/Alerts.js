@@ -5,11 +5,11 @@ import axios from "axios";
 import { useState } from "react";
 import "./Dash.css";
 import { Fragment } from "react";
-const space = <Fragment>&nbsp;&nbsp;&nbsp;&nbsp;</Fragment>
+const space = <Fragment>&nbsp;&nbsp;&nbsp;&nbsp;</Fragment>;
 const borderColor = "#A2C987";
 
 const Alerts = (props) => {
-  console.log(props.location.state);
+  console.log(props);
 
   const clientname = props.location.state.companyId;
   var leftcrumb =
@@ -18,6 +18,9 @@ const Alerts = (props) => {
     " > " +
     props.location.state.institutionName +
     " > Bank Alerts";
+  var leftc = "Client > " + props.location.state.companyId;
+  var bankc = " > " + props.location.state.institutionName;
+  var curc = " > Bank Alerts";
   const email = localStorage.getItem("email");
   const cell = localStorage.getItem("cell");
   const fname = localStorage.getItem("fname");
@@ -77,85 +80,102 @@ const Alerts = (props) => {
   };
   return (
     <>
-      <LogoHeader left={leftcrumb} right="Sign out" />
+      <LogoHeader
+        leftc={leftc}
+        bankc={bankc}
+        curc={curc}
+        ori={props}
+        right="Sign out"
+      />
 
-      <div className="ml-20" >
-      <div style={{fontSize : "20px" }}>
-        This is Client {props.location.state.companyId}
-        {"'s "}
-        Bank Alert page: 
-        <br />
-        <br></br>
-        <span className="p1">
-          <span style={{color : "grey"}}>
-           1) Get notified when a payment comes in for a specific amount:</span></span>
-        <br />
-        <br />
-        <b>Amount:</b> <br />
-        <input
-          style={{
-           width :"500px", 
-           border : "2px solid #00b050"
-           
-          }}
-          
-          required
-          type="text"
-          name="amount"
-          placeholder="$1500"
-          value={amount != -1 ? amount : ""}
-          onChange={(e) => setAmount(e.target.value)}
-        />
-        <br />
-        <br></br>
-        <br></br>
-
-        2) Get notified when a bank deposit includes the following description:{" "}
-        <br />
-        <br />
-        <b>Description:</b> <br />
-        <input
-          style={{ width :"500px",
-          border : "2px solid #00b050"
-        }}
-          required
-          type="text"
-          name="desc"
-          placeholder="“CARELIEF” OR “CALIFORNIA RELIEF” OR “RELIEF“"
-          value={message != "NA" ? message : ""}
-          onChange={(e) => setMessage(e.target.value)}
-        />
-        <br />
-        <br></br><br></br>
-        <b>TextMessage: {space}{space}{space}{space}{space}
-        Email: </b> 
-        <br></br>
-        <input type="checkbox"
-        style={{border : "2px solid #00b050"}}
-         onChange={() => setCellcheck(!cellcheck)} /> {cell}
-        {space}{space}{space}{space}{space}
-        <input type="checkbox"
-        style={{border : "2px solid #00b050"}}
-         onChange={() => setMailcheck(!mailcheck)} />
-        {email}
-        
-        
-        <br />
-        <button
-          style={{
-            width: "250px",
-            borderRadius: "3px",
-            letterSpacing: "1.5px",
-            marginTop: "1rem",
-            backgroundColor: "#00B050",
-          }}
-          onClick={handleClick}
-          className="w-full hover:bg-pink-700 text-white font-bold py-2 px-4 mb-4 rounded"
-        >
-          <center>Update Alerts</center>
-        </button>
+      <div className="ml-20">
+        <div style={{ fontSize: "20px" }}>
+          This is Client {props.location.state.companyId}
+          {"'s "}
+          Bank Alert page:
+          <br />
+          <br></br>
+          <span className="p1">
+            <span style={{ color: "grey" }}>
+              1) Get notified when a payment comes in for a specific amount:
+            </span>
+          </span>
+          <br />
+          <br />
+          <b>Amount:</b> <br />
+          <input
+            style={{
+              width: "500px",
+              border: "2px solid #00b050",
+            }}
+            required
+            type="text"
+            name="amount"
+            placeholder="$1500"
+            value={amount != -1 ? amount : ""}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+          <br />
+          <br></br>
+          <br></br>
+          2) Get notified when a bank deposit includes the following
+          description: <br />
+          <br />
+          <b>Description:</b> <br />
+          <input
+            style={{ width: "500px", border: "2px solid #00b050" }}
+            required
+            type="text"
+            name="desc"
+            placeholder="“CARELIEF” OR “CALIFORNIA RELIEF” OR “RELIEF“"
+            value={message != "NA" ? message : ""}
+            onChange={(e) => setMessage(e.target.value)}
+          />
+          <br />
+          <br></br>
+          <br></br>
+          <b>
+            TextMessage: {space}
+            {space}
+            {space}
+            {space}
+            {space}
+            Email:{" "}
+          </b>
+          <br></br>
+          <input
+            type="checkbox"
+            style={{ border: "2px solid #00b050" }}
+            onChange={() => setCellcheck(!cellcheck)}
+          />{" "}
+          {cell}
+          {space}
+          {space}
+          {space}
+          {space}
+          {space}
+          <input
+            type="checkbox"
+            style={{ border: "2px solid #00b050" }}
+            onChange={() => setMailcheck(!mailcheck)}
+          />
+          {email}
+          <br />
+          <button
+            style={{
+              width: "250px",
+              borderRadius: "3px",
+              letterSpacing: "1.5px",
+              marginTop: "1rem",
+              backgroundColor: "#00B050",
+            }}
+            onClick={handleClick}
+            className="w-full hover:bg-pink-700 text-white font-bold py-2 px-4 mb-4 rounded"
+          >
+            <center>Update Alerts</center>
+          </button>
+        </div>
       </div>
-      </div> 
     </>
   );
 };

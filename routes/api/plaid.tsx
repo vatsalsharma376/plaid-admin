@@ -30,8 +30,8 @@ const configuration = new Configuration({
   basePath: PlaidEnvironments["development"],
   baseOptions: {
     headers: {
-      "PLAID-CLIENT-ID": process.env.CLIENTID,
-      "PLAID-SECRET": process.env.SECRET,
+      "PLAID-CLIENT-ID": "62440a71a1f92500132351e4",
+      "PLAID-SECRET": "4bef8b9414bd32a39cba039d48b938",
     },
   },
 });
@@ -41,8 +41,8 @@ const client = new PlaidApi(configuration);
 var PUBLIC_TOKEN = null;
 var ACCESS_TOKEN = null;
 var ITEM_ID = null;
-const accountSid = process.env.SID;
-const authToken = process.env.AUTH_TOKEN;
+const accountSid = "AC999s";
+const authToken = "xyz";
 const twclient = require("twilio")(accountSid, authToken);
 // @route GET api/plaid/accounts
 // @desc Get all accounts linked with plaid for a specific user
@@ -131,7 +131,7 @@ router.delete(
 // @access Private
 router.post(
   "/accounts/transactions",
-  passport.authenticate("jwt", { session: false }),
+
   (req, res) => {
     const now = moment();
     const today = now.format("YYYY-MM-DD");

@@ -45,7 +45,7 @@ const Template = (props) => {
                 date: transaction.date,
                 category: transaction.category[0],
                 name: transaction.name,
-                amount: transaction.amount,
+                amount: transaction.amount * -1,
               });
             });
           });
@@ -77,6 +77,9 @@ const Template = (props) => {
     " > " +
     props.location.state.institutionName +
     " > Bank Transactions";
+  var leftc = "Client > " + props.location.state.companyId;
+  var bankc = " > " + props.location.state.institutionName;
+  var curc = " > Bank Transactions";
   const handleClick = () => {
     //e.preventDefault();
     props.history.push({
@@ -86,7 +89,13 @@ const Template = (props) => {
   };
   return (
     <>
-      <LogoHeader right="Sign out" left={leftcrumb} />
+      <LogoHeader
+        right="Sign out"
+        leftc={leftc}
+        bankc={bankc}
+        curc={curc}
+        ori={props}
+      />
 
       <div className="ml-20">
         This is Client {props.location.state.companyId}

@@ -26,9 +26,12 @@ const Choose = (props) => {
     props.location.state.companyId +
     " > " +
     props.location.state.institutionName;
+  var leftc = "Client > " + props.location.state.companyId;
+  var curc = " > " + props.location.state.institutionName;
+
   return (
     <>
-      <LogoHeader right="Sign out" left={leftcrumb} />
+      <LogoHeader right="Sign out" leftc={leftc} curc={curc} ori={props} />
 
       <div className="ml-20">
         This is Client {props.location.state.companyId}

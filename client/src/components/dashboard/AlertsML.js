@@ -37,7 +37,10 @@ const AlertsML = (props) => {
     " > " +
     props.location.state.institutionName +
     " > Bank Alerts > Email";
-
+  var leftc = "Client > " + props.location.state.companyId;
+  var bankc = " > " + props.location.state.institutionName;
+  var alertc = " > Bank Alerts";
+  var curc = " > Email";
   const handleClick = async () => {
     const curst = props.location.state;
     curst.adata.fullMLmessage = AlertML;
@@ -48,7 +51,14 @@ const AlertsML = (props) => {
   };
   return (
     <>
-      <LogoHeader left={leftcrumb} right="Sign out" />
+      <LogoHeader
+        leftc={leftc}
+        bankc={bankc}
+        alertc={alertc}
+        curc={curc}
+        ori={props}
+        right="Sign out"
+      />
       <div className="ml-20">
         <div style={{ fontSize: "20px" }}>
           This is Client {clientname} Bank Alert Page:
