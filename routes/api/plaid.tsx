@@ -18,6 +18,8 @@ const Account = require("../../models/Account");
 const User = require("../../models/User");
 const Alerts = require("../../models/Alerts");
 const sgMail = require("@sendgrid/mail");
+require("dotenv").config();
+//console.log(process.env);
 sgMail.setApiKey(
   "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"
 );
@@ -25,11 +27,11 @@ sgMail.setApiKey(
 const userURI =
   "mongodb+srv://claimyouraid:cya@cluster0.kfgzq.mongodb.net/?retryWrites=true&w=majority";
 const configuration = new Configuration({
-  basePath: PlaidEnvironments["sandbox"],
+  basePath: PlaidEnvironments["development"],
   baseOptions: {
     headers: {
-      "PLAID-CLIENT-ID": "6166d89a162e690010d7084b",
-      "PLAID-SECRET": "9097d5e53b34172035a9cbf66e1047",
+      "PLAID-CLIENT-ID": process.env.CLIENTID,
+      "PLAID-SECRET": process.env.SECRET,
     },
   },
 });
@@ -39,8 +41,8 @@ const client = new PlaidApi(configuration);
 var PUBLIC_TOKEN = null;
 var ACCESS_TOKEN = null;
 var ITEM_ID = null;
-const accountSid = "ACd092381d0c8cc04422e65e019416b32f";
-const authToken = "a82a9ea388a9d1b7143736789d29c31e";
+const accountSid = process.env.SID;
+const authToken = process.env.AUTH_TOKEN;
 const twclient = require("twilio")(accountSid, authToken);
 // @route GET api/plaid/accounts
 // @desc Get all accounts linked with plaid for a specific user
@@ -230,20 +232,17 @@ router.get("/banknames", async (req, res) => {
 // @access Private
 router.post("/addAlert", async (req, res) => {
   try {
-    alertcoll.findOne({ accessToken: req.body.accessToken }).then((alert) => {
-      //console.log(typeof req.body.accessToken);
-      alertcoll.remove({ accessToken: req.body.accessToken });
-      //console.log(alert);
-      var reqbd = req.body;
-      if (reqbd.lasttxndone === undefined) reqbd.lasttxndone = 0;
-      const newAlert = new Alerts(reqbd);
-      newAlert.save();
-    });
+    alertcoll.update(
+      { accessToken: req.body.accessToken },
+      { $set: req.body },
+      {
+        upsert: true,
+      }
+    );
   } catch (err) {
     console.error("Failed to insert alerts in database", err);
   }
 });
-
 
 cron.schedule("* * * * *", async () => {
   try {
@@ -268,7 +267,7 @@ cron.schedule("* * * * *", async () => {
           const CLIENTNAME = alert[ind].clientname;
           var TXTBODY = alert[ind].fullTXTmessage;
           var MLBODY = alert[ind].fullMLmessage;
-          console.log(curAccessToken, alert[ind].lasttxn);
+          //console.log(curAccessToken, alert[ind].lasttxn);
           //console.log(TXTBODY, MLBODY);
           const OFFSET =
             alert[ind].lasttxndone === undefined ? 0 : alert[ind].lasttxndone;
@@ -277,7 +276,7 @@ cron.schedule("* * * * *", async () => {
           var NEWOFFSET = 0;
           const txnreq = {
             access_token: curAccessToken,
-            start_date: "2022-03-06",
+            start_date: "2022-04-15",
             end_date: today,
           };
           client
@@ -326,7 +325,7 @@ cron.schedule("* * * * *", async () => {
                     twclient.messages
                       .create({
                         body: TXTBODY,
-                        from: "+13515298183",
+                        from: "+13206264617",
                         to: CELL,
                       })
                       .then((message) => console.log(message.sid))
@@ -356,23 +355,36 @@ cron.schedule("* * * * *", async () => {
           var prevAlert = alert[ind];
           prevAlert.lasttxndone = NEWOFFSET;
           prevAlert.lasttxn = today;
+          // alertcoll
+          //   .remove({ accessToken: curAccessToken })
+          //   .then((response) => {
+          //     console.log(response);
+          //     const newAlert = new Alerts(prevAlert);
+          //     newAlert
+          //       .save()
+          //       .then((response) => {
+          //         console.log("Successfully updated alert");
+          //       })
+          //       .catch((error) => {
+          //         console.log("Error updating alert", error);
+          //       });
+          //   })
+          //   .catch((error) => {
+          //     console.log(error);
+          //   });
           alertcoll
-            .remove({ accessToken: curAccessToken })
-            .then((response) => {
-              console.log(response);
+            .update(
+              { accessToken: curAccessToken },
+              { $set: prevAlert },
+              {
+                upsert: true,
+              }
+            )
+            .then((all) => {
+              console.log(all);
             })
-            .catch((error) => {
-              console.log(error);
-            });
-
-          const newAlert = new Alerts(prevAlert);
-          newAlert
-            .save()
-            .then((response) => {
-              console.log("Successfully updated alert");
-            })
-            .catch((error) => {
-              console.log("Error updating alert", error);
+            .catch((err) => {
+              console.log(err);
             });
         }
       });
