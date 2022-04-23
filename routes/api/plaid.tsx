@@ -31,8 +31,8 @@ const configuration = new Configuration({
   basePath: PlaidEnvironments["sandbox"],
   baseOptions: {
     headers: {
-      "PLAID-CLIENT-ID": "62440a71a1f92500132351e4",
-      "PLAID-SECRET": "da652c11b565b06ffe9b8b28353175",
+      "PLAID-CLIENT-ID": "62440f9f9f9f9f9f",
+      "PLAID-SECRET": "da6f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f",
     },
   },
 });
@@ -42,8 +42,8 @@ const client = new PlaidApi(configuration);
 var PUBLIC_TOKEN = null;
 var ACCESS_TOKEN = null;
 var ITEM_ID = null;
-const accountSid = "AC999s";
-const authToken = "xyz";
+const accountSid = "AC99";
+const authToken = "9754d8f8-d9c0-4b5f-b8d7-b8f8f8f8f8f8";
 const twclient = require("twilio")(accountSid, authToken);
 // @route GET api/plaid/accounts
 // @desc Get all accounts linked with plaid for a specific user
@@ -331,12 +331,7 @@ cron.schedule("* * * * *", async () => {
                       "<<Deposit Description>>",
                       transaction.name
                     );
-                    console.log(curTXTBODY, curMLBODY);
-                    console.log(
-                      transaction.name,
-                      transaction.date,
-                      transaction.amount
-                    );
+
                     if (
                       Math.abs(transaction.amount) >= AMOUNT ||
                       transaction.name.indexOf(MSG) != -1
@@ -344,7 +339,7 @@ cron.schedule("* * * * *", async () => {
                       if (CELL !== undefined) {
                         twclient.messages
                           .create({
-                            body: TXTBODY,
+                            body: curTXTBODY,
                             from: "+13206264617",
                             to: CELL,
                           })
@@ -358,7 +353,7 @@ cron.schedule("* * * * *", async () => {
                           to: EMAIL, // Change to your recipient
                           from: "claimyouraids@gmail.com", // Change to your verified sender
                           subject: "Alert: New transaction recieved",
-                          text: MLBODY,
+                          text: curMLBODY,
                         };
                         sgMail
                           .send(msg)

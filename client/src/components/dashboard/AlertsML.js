@@ -44,10 +44,11 @@ const AlertsML = (props) => {
   const handleClick = async () => {
     const curst = props.location.state;
     curst.adata.fullMLmessage = AlertML;
-    const res = await axios.post("/api/plaid/addAlert", curst.adata);
+    const res = axios.post("/api/plaid/addAlert", curst.adata);
     alert("Alert added successfully");
-
-    window.location.href = "https://cyaadmin.herokuapp.com/";
+    props.history.push({
+      pathname: "/dash",
+    });
   };
   return (
     <>
