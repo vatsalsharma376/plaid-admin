@@ -4,6 +4,7 @@ import { connect } from "react-redux";
 import { useEffect } from "react";
 import { useState } from "react";
 import axios from "axios";
+import dayjs from "dayjs";
 import {
   getTransactions,
   addAccount,
@@ -21,6 +22,7 @@ const Template = (props) => {
   let transactionsData = [];
   const [len, setLen] = useState(0);
   const [showtxn, setshowtxn] = useState([{}]);
+  const [fulltxn, setfulltxn] = useState([{}]);
   const [txnloading, settxnloading] = useState(true);
   // const populate = () => {
   const [cal1, setcal1] = useState(false);
@@ -53,7 +55,8 @@ const Template = (props) => {
           settxnloading(false);
           setLen(transactionsData.length);
           setshowtxn(transactionsData);
-          console.log(transactionsData);
+          setfulltxn(transactionsData);
+          //console.log(transactionsData);
         });
     },
     //transactionsData.forEach((ex)=>console.log(ex)); works
@@ -86,6 +89,30 @@ const Template = (props) => {
       pathname: "/alerts",
       state: curst,
     });
+  };
+  const handleFilter = (e) => {
+    e.preventDefault();
+    if (date1[0] === "C") {
+      alert("Please select a starting date");
+    } else if (date2[0] === "C") {
+      alert("Please select an ending date");
+    } else {
+      const rdate1 = dayjs(date1).format("YYYY-MM-DD");
+      const rdate2 = dayjs(date2).format("YYYY-MM-DD");
+      // both dates are valid
+      const currenttxn = fulltxn;
+      // filter all transactions between date1 and date2
+      const filteredtxn = currenttxn.filter((txn) => {
+        return txn.date >= rdate1 && txn.date <= rdate2;
+      });
+      setshowtxn(filteredtxn);
+    }
+  };
+  const handleReset = (e) => {
+    e.preventDefault();
+    setshowtxn(fulltxn);
+    setdate1("Choose a starting date");
+    setdate2("Choose an ending date");
   };
   return (
     <>
@@ -172,6 +199,34 @@ const Template = (props) => {
               }}
             />
           )}
+          <div className="flex flex-row space-x-4">
+            <button
+              style={{
+                width: "150px",
+                borderRadius: "3px",
+                letterSpacing: "1.5px",
+                marginTop: "1rem",
+                backgroundColor: "#00B050",
+              }}
+              className="w-full hover:bg-pink-700 text-white font-bold py-2 px-4 mb-4 rounded"
+              onClick={handleFilter}
+            >
+              Filter
+            </button>
+            <button
+              style={{
+                width: "150px",
+                borderRadius: "3px",
+                letterSpacing: "1.5px",
+                marginTop: "1rem",
+                backgroundColor: "#00B050",
+              }}
+              className="w-full hover:bg-pink-700 text-white font-bold py-2 px-4 mb-4 rounded"
+              onClick={handleReset}
+            >
+              Reset
+            </button>
+          </div>
         </form>
 
         {accounts.length <= 0 ? (

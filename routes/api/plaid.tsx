@@ -31,8 +31,8 @@ const configuration = new Configuration({
   basePath: PlaidEnvironments["sandbox"],
   baseOptions: {
     headers: {
-      "PLAID-CLIENT-ID": "62440f9f9f9f9f9f",
-      "PLAID-SECRET": "da6f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f",
+      "PLAID-CLIENT-ID": "624b9f9f9f9f9f9f",
+      "PLAID-SECRET": "da65b9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f",
     },
   },
 });
@@ -159,7 +159,7 @@ router.post(
               accountName: institutionName,
               transactions: response.data.transactions,
             });
-            console.log(response.data.transactions[0]);
+            //console.log(response.data.transactions[0]);
             if (transactions.length === accounts.length) {
               res.json(transactions);
             }
