@@ -34,7 +34,7 @@ const Dash = () => {
     let curshownItems = items.map((item) => {
       return (
         <tr key={item._id}>
-          <td>{item.comp}</td>
+          <td>{item.companyId}</td>
           <td>{item.fname}</td>
           <td>{"ADP"}</td>
           <td>{<UsracList acc={item} />}</td>
@@ -52,7 +52,7 @@ const Dash = () => {
       for (let i = 0; i < banks.data.length; i++) {
         if (banks.data[i].userId == user._id) {
           user.acc.push(banks.data[i]);
-          user.comp = banks.data[i].companyId;
+          user.companyId = user.companyId;
         }
       }
       if (user.acc.length > 0) listedname.push(user);
