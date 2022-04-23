@@ -17,6 +17,7 @@ const { Configuration, PlaidApi, PlaidEnvironments } = require("plaid");
 const Account = require("../../models/Account");
 const User = require("../../models/User");
 const Alerts = require("../../models/Alerts");
+const Transaction = require("../../models/Transaction");
 const sgMail = require("@sendgrid/mail");
 require("dotenv").config();
 //console.log(process.env);
@@ -27,11 +28,11 @@ sgMail.setApiKey(
 const userURI =
   "mongodb+srv://claimyouraid:cya@cluster0.kfgzq.mongodb.net/?retryWrites=true&w=majority";
 const configuration = new Configuration({
-  basePath: PlaidEnvironments["development"],
+  basePath: PlaidEnvironments["sandbox"],
   baseOptions: {
     headers: {
       "PLAID-CLIENT-ID": "62440a71a1f92500132351e4",
-      "PLAID-SECRET": "4bef8b9414bd32a39cba039d48b938",
+      "PLAID-SECRET": "da652c11b565b06ffe9b8b28353175",
     },
   },
 });
@@ -158,7 +159,7 @@ router.post(
               accountName: institutionName,
               transactions: response.data.transactions,
             });
-            console.log(transactions);
+            console.log(response.data.transactions[0]);
             if (transactions.length === accounts.length) {
               res.json(transactions);
             }
@@ -185,12 +186,12 @@ let alertcoll;
 router.get("/names", async (req, res) => {
   try {
     let mongoClient = await connectToCluster(userURI);
-    db1 = mongoClient.db("Cluster1");
-    alertcoll = db1.collection("alerts");
+    db1 = await mongoClient.db("Cluster1");
+    alertcoll = await db1.collection("alerts");
 
-    const db = mongoClient.db("Cluster0");
-    const collection = db.collection("users");
-    collection1 = db.collection("accounts");
+    const db = await mongoClient.db("Cluster0");
+    const collection = await db.collection("users");
+    collection1 = await db.collection("accounts");
     //collection2 = db.collection("company");
 
     let time = Date.now();
@@ -247,8 +248,10 @@ router.post("/addAlert", async (req, res) => {
 cron.schedule("* * * * *", async () => {
   try {
     let mongoClient = await connectToCluster(userURI);
-    db1 = mongoClient.db("Cluster1");
-    alertcoll = db1.collection("alerts");
+    db1 = await mongoClient.db("Cluster1");
+    const db2 = await mongoClient.db("Cluster0");
+    alertcoll = await db1.collection("alerts");
+    const txncoll = await db2.collection("transactions");
     alertcoll
       .find()
       .toArray()
@@ -267,94 +270,213 @@ cron.schedule("* * * * *", async () => {
           const CLIENTNAME = alert[ind].clientname;
           var TXTBODY = alert[ind].fullTXTmessage;
           var MLBODY = alert[ind].fullMLmessage;
+          let recentTxn;
+          // get the recent transaction and then check if there is any newer transaction
+          txncoll
+            .find({ accessToken: curAccessToken })
+            .limit(1)
+            .sort({ txndate: -1 })
+            .toArray()
+            .then((rtxn) => {
+              recentTxn = rtxn[0];
+              const txnreq = {
+                access_token: curAccessToken,
+                start_date: recentTxn.txndate,
+                end_date: today,
+              };
+              console.log(curAccessToken);
+              client
+                .transactionsGet(txnreq)
+                .then((response) => {
+                  const transactions = response.data.transactions;
+                  //console.log(response.data);
+                  //console.log(transactions.length);
+                  for (
+                    var counter = 0;
+                    counter < transactions.length;
+                    counter++
+                  ) {
+                    var curTXTBODY = TXTBODY;
+                    var curMLBODY = MLBODY;
+                    if (
+                      transactions[counter].name === recentTxn.name &&
+                      transactions[counter].amount === recentTxn.amount
+                    ) {
+                      break; // if we encounter previously seen transaction then we break out of the loop
+                    }
+                    var transaction = transactions[counter];
+                    //console.log(transaction);
+                    //console.log(transaction.amount);
+                    curTXTBODY = curTXTBODY.replace(
+                      "<<Deposit Date>>",
+                      transaction.date
+                    );
+                    curTXTBODY = curTXTBODY.replace(
+                      "<<Deposit Amount>>",
+                      transaction.amount
+                    );
+                    curTXTBODY = curTXTBODY.replace(
+                      "<<Deposit Description>>",
+                      transaction.name
+                    );
+                    curMLBODY = curMLBODY.replace(
+                      "<<Deposit Date>>",
+                      transaction.date
+                    );
+                    curMLBODY = curMLBODY.replace(
+                      "<<Deposit Amount>>",
+                      transaction.amount
+                    );
+                    curMLBODY = curMLBODY.replace(
+                      "<<Deposit Description>>",
+                      transaction.name
+                    );
+                    console.log(curTXTBODY, curMLBODY);
+                    console.log(
+                      transaction.name,
+                      transaction.date,
+                      transaction.amount
+                    );
+                    if (
+                      Math.abs(transaction.amount) >= AMOUNT ||
+                      transaction.name.indexOf(MSG) != -1
+                    ) {
+                      if (CELL !== undefined) {
+                        twclient.messages
+                          .create({
+                            body: TXTBODY,
+                            from: "+13206264617",
+                            to: CELL,
+                          })
+                          .then((message) => console.log(message.sid))
+                          .catch((err) =>
+                            console.log("Twilio error here", err)
+                          );
+                      }
+                      if (EMAIL !== undefined) {
+                        const msg = {
+                          to: EMAIL, // Change to your recipient
+                          from: "claimyouraids@gmail.com", // Change to your verified sender
+                          subject: "Alert: New transaction recieved",
+                          text: MLBODY,
+                        };
+                        sgMail
+                          .send(msg)
+                          .then((response) => {
+                            console.log(response[0].statusCode);
+                          })
+                          .catch((error) => {
+                            console.error(error.response.body.errors[0]);
+                          });
+                      }
+                    }
+                    // add the new transactions to the database
+                    const newTxn = {
+                      userId: recentTxn.userId,
+                      accountId: recentTxn.accountId,
+                      accessToken: recentTxn.accessToken,
+                      name: transaction.name,
+                      txndate: transaction.date,
+                      amount: transaction.amount,
+                      accountname: recentTxn.accountname,
+                      category: transaction.category[0],
+                    };
+                    txncoll.insertOne(newTxn);
+                  }
+                })
+                .catch((err) =>
+                  console.log("Transactions fetching error: ", err)
+                );
+            });
+          //console.log(recentxn);
           //console.log(curAccessToken, alert[ind].lasttxn);
           //console.log(TXTBODY, MLBODY);
-          const OFFSET =
-            alert[ind].lasttxndone === undefined ? 0 : alert[ind].lasttxndone;
-          //const thirtyDaysAgo = now.subtract(2, "days").format("YYYY-MM-DD");
-          // const OFFSET = 0;
-          var NEWOFFSET = 0;
-          const txnreq = {
-            access_token: curAccessToken,
-            start_date: "2022-04-15",
-            end_date: today,
-          };
-          client
-            .transactionsGet(txnreq)
-            .then((response) => {
-              const transactions = response.data.transactions;
-              //console.log(response.data);
-              //console.log(transactions.length);
-              for (
-                var counter = transactions.length - 1 - OFFSET;
-                counter >= 0;
-                counter--
-              ) {
-                var transaction = transactions[counter];
-                if (today == transaction.date) ++NEWOFFSET;
-                //console.log(transaction.amount);
-                TXTBODY = TXTBODY.replace("<<Deposit Date>>", transaction.date);
-                TXTBODY = TXTBODY.replace(
-                  "<<Deposit Amount>>",
-                  transaction.amount
-                );
-                TXTBODY = TXTBODY.replace(
-                  "<<Deposit Description>>",
-                  transaction.name
-                );
-                MLBODY = MLBODY.replace("<<Deposit Date>>", transaction.date);
-                MLBODY = MLBODY.replace(
-                  "<<Deposit Amount>>",
-                  transaction.amount
-                );
-                MLBODY = MLBODY.replace(
-                  "<<Deposit Description>>",
-                  transaction.name
-                );
-                console.log(TXTBODY, MLBODY);
-                console.log(
-                  transaction.name,
-                  transaction.date,
-                  transaction.amount
-                );
-                if (
-                  Math.abs(transaction.amount) >= AMOUNT ||
-                  transaction.name.indexOf(MSG) != -1
-                ) {
-                  if (CELL !== undefined) {
-                    twclient.messages
-                      .create({
-                        body: TXTBODY,
-                        from: "+13206264617",
-                        to: CELL,
-                      })
-                      .then((message) => console.log(message.sid))
-                      .catch((err) => console.log("Twilio error here", err));
-                  }
-                  if (EMAIL !== undefined) {
-                    const msg = {
-                      to: EMAIL, // Change to your recipient
-                      from: "claimyouraids@gmail.com", // Change to your verified sender
-                      subject: "Alert: New transaction recieved",
-                      text: MLBODY,
-                    };
-                    sgMail
-                      .send(msg)
-                      .then((response) => {
-                        console.log(response[0].statusCode);
-                      })
-                      .catch((error) => {
-                        console.error(error.response.body.errors[0]);
-                      });
-                  }
-                }
-              }
-            })
-            .catch((err) => console.log("Transactions fetching error: ", err));
+          // const OFFSET =
+          //   alert[ind].lasttxndone === undefined ? 0 : alert[ind].lasttxndone;
+          // //const thirtyDaysAgo = now.subtract(2, "days").format("YYYY-MM-DD");
+          // // const OFFSET = 0;
+          // var NEWOFFSET = 0;
+          // const txnreq = {
+          //   access_token: curAccessToken,
+          //   start_date: "2022-04-15",
+          //   end_date: today,
+          // };
+          // client
+          //   .transactionsGet(txnreq)
+          //   .then((response) => {
+          //     const transactions = response.data.transactions;
+          //     //console.log(response.data);
+          //     //console.log(transactions.length);
+          //     for (
+          //       var counter = transactions.length - 1 - OFFSET;
+          //       counter >= 0;
+          //       counter--
+          //     ) {
+          //       var transaction = transactions[counter];
+          //       if (today == transaction.date) ++NEWOFFSET;
+          //       //console.log(transaction.amount);
+          //       TXTBODY = TXTBODY.replace("<<Deposit Date>>", transaction.date);
+          //       TXTBODY = TXTBODY.replace(
+          //         "<<Deposit Amount>>",
+          //         transaction.amount
+          //       );
+          //       TXTBODY = TXTBODY.replace(
+          //         "<<Deposit Description>>",
+          //         transaction.name
+          //       );
+          //       MLBODY = MLBODY.replace("<<Deposit Date>>", transaction.date);
+          //       MLBODY = MLBODY.replace(
+          //         "<<Deposit Amount>>",
+          //         transaction.amount
+          //       );
+          //       MLBODY = MLBODY.replace(
+          //         "<<Deposit Description>>",
+          //         transaction.name
+          //       );
+          //       console.log(TXTBODY, MLBODY);
+          //       console.log(
+          //         transaction.name,
+          //         transaction.date,
+          //         transaction.amount
+          //       );
+          //       if (
+          //         Math.abs(transaction.amount) >= AMOUNT ||
+          //         transaction.name.indexOf(MSG) != -1
+          //       ) {
+          //         if (CELL !== undefined) {
+          //           twclient.messages
+          //             .create({
+          //               body: TXTBODY,
+          //               from: "+13206264617",
+          //               to: CELL,
+          //             })
+          //             .then((message) => console.log(message.sid))
+          //             .catch((err) => console.log("Twilio error here", err));
+          //         }
+          //         if (EMAIL !== undefined) {
+          //           const msg = {
+          //             to: EMAIL, // Change to your recipient
+          //             from: "claimyouraids@gmail.com", // Change to your verified sender
+          //             subject: "Alert: New transaction recieved",
+          //             text: MLBODY,
+          //           };
+          //           sgMail
+          //             .send(msg)
+          //             .then((response) => {
+          //               console.log(response[0].statusCode);
+          //             })
+          //             .catch((error) => {
+          //               console.error(error.response.body.errors[0]);
+          //             });
+          //         }
+          //       }
+          //     }
+          //   })
+          //   .catch((err) => console.log("Transactions fetching error: ", err));
           // update the alert after sending current alerts
-          var prevAlert = alert[ind];
-          prevAlert.lasttxndone = NEWOFFSET;
-          prevAlert.lasttxn = today;
+          // var prevAlert = alert[ind];
+          // prevAlert.lasttxndone = NEWOFFSET;
+          // prevAlert.lasttxn = today;
           // alertcoll
           //   .remove({ accessToken: curAccessToken })
           //   .then((response) => {
@@ -372,20 +494,20 @@ cron.schedule("* * * * *", async () => {
           //   .catch((error) => {
           //     console.log(error);
           //   });
-          alertcoll
-            .update(
-              { accessToken: curAccessToken },
-              { $set: prevAlert },
-              {
-                upsert: true,
-              }
-            )
-            .then((all) => {
-              console.log(all);
-            })
-            .catch((err) => {
-              console.log(err);
-            });
+          // alertcoll
+          //   .update(
+          //     { accessToken: curAccessToken },
+          //     { $set: prevAlert },
+          //     {
+          //       upsert: true,
+          //     }
+          //   )
+          //   .then((all) => {
+          //     console.log(all);
+          //   })
+          //   .catch((err) => {
+          //     console.log(err);
+          //   });
         }
       });
   } catch (err) {
