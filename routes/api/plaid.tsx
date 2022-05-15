@@ -28,11 +28,11 @@ sgMail.setApiKey(
 const userURI =
   "mongodb+srv://claimyouraid:cya@cluster0.kfgzq.mongodb.net/?retryWrites=true&w=majority";
 const configuration = new Configuration({
-  basePath: PlaidEnvironments["sandbox"],
+  basePath: PlaidEnvironments["development"],
   baseOptions: {
     headers: {
-      "PLAID-CLIENT-ID": "624b9f9f9f9f9f9f",
-      "PLAID-SECRET": "da65b9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f",
+      "PLAID-CLIENT-ID": "62440a71a1f92500132351e4",
+      "PLAID-SECRET": "ec86bb15ef5d21de23bfdc6d65c22f",
     },
   },
 });
@@ -227,6 +227,54 @@ router.get("/banknames", async (req, res) => {
     console.error("Failed to get names from MongoDB Atlas", err);
   }
 });
+
+router.post(
+  "/accounts/transactions/import",
+
+  async (req, res) => {
+    //console.log(req.body);
+    const mongoClient = await connectToCluster(userURI);
+    const db = await mongoClient.db("Cluster0");
+    const txncoll = await db.collection("transactions");
+
+    const now = moment();
+    const today = now.format("YYYY-MM-DD");
+    const twoYearsAgo = now.subtract(2, "years").format("YYYY-MM-DD");
+
+    const txnreq = {
+      access_token: req.body.accessTkn,
+      start_date: twoYearsAgo,
+      end_date: today,
+      options: {
+        count: 500,
+      },
+    };
+    var alltxn = [];
+    client
+      .transactionsGet(txnreq)
+      .then((response) => {
+        //console.log(response); response.data.transactions = an array of transaction objects
+        let transaction1 = response.data.transactions;
+        for (var i = 0; i < transaction1.length; i++) {
+          const curTxn = {
+            accountId: req.body.accId,
+            accessToken: req.body.accessTkn,
+            accountname: req.body.acName,
+            name: transaction1[i].name,
+            amount: transaction1[i].amount,
+            txndate: transaction1[i].date,
+            category: transaction1[i].category[0],
+          };
+          try {
+            txncoll.update(curTxn, { $set: curTxn }, { upsert: true });
+          } catch (err) {
+            console.log(err);
+          }
+        }
+      })
+      .catch((err) => console.log(err));
+  }
+);
 
 // @route POST api/plaid/add
 // @desc Add all alerts to the database which will be monitored

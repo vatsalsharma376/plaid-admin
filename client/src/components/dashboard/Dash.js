@@ -13,6 +13,7 @@ import { logoutUser } from "../../actions/authActions";
 import axios from "axios";
 import LogoHeader from "../layout/LogoHeader";
 import UsracList from "./UsracList";
+import ImportList from "./ImportList";
 import ReactPaginate from "react-paginate";
 import "./Dash.css";
 var listedname = [];
@@ -38,6 +39,7 @@ const Dash = () => {
           <td>{item.fname}</td>
           <td>{"ADP"}</td>
           <td>{<UsracList acc={item} />}</td>
+          <td>{<ImportList acc={item} />}</td>
         </tr>
       );
     });
@@ -83,6 +85,7 @@ const Dash = () => {
             <th>Owner</th>
             <th>Payroll System</th>
             <th>Bank System</th>
+            <th>Import</th>
           </tr>
         </thead>
         <tbody>{shownItems}</tbody>

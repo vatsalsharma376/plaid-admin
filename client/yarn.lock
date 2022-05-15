@@ -7727,7 +7727,7 @@
     "react-scripts" "^4.0.3"
     "twilio" "^3.75.0"
     "validator" "^10.9.0"
-    "zustand" "^3.7.0"
+    "zustand" "^3.7.2"
 
 "methods@~1.1.2":
   "integrity" "sha1-VSmk1nZUE07cxSZmVoNbD4Ua/O4="
