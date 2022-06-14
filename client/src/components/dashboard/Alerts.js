@@ -1,10 +1,13 @@
 import React from "react";
-import LogoHeader from "../layout/LogoHeader";
+import Slider from "@material-ui/core/Slider";
 import moment from "moment";
-import axios from "axios";
 import { useState } from "react";
-import "./Dash.css";
 import { Fragment } from "react";
+import axios from "axios";
+
+import LogoHeader from "../layout/LogoHeader";
+import "./Dash.css";
+
 const space = <Fragment>&nbsp;&nbsp;&nbsp;&nbsp;</Fragment>;
 const borderColor = "#A2C987";
 
@@ -25,10 +28,17 @@ const Alerts = (props) => {
   const cell = localStorage.getItem("cell");
   const fname = localStorage.getItem("fname");
 
-  const [amount, setAmount] = useState(-1);
+  const [stamount, setStamount] = useState(-1);
+  const [endamount, setEndamount] = useState(-1);
   const [message, setMessage] = useState("NA");
   const [mailcheck, setMailcheck] = useState(false);
   const [cellcheck, setCellcheck] = useState(false);
+
+  const rangeSelector = (event, newValue) => {
+    setStamount(newValue[0]);
+    setEndamount(newValue[1]);
+  };
+
   const handleClick = (e) => {
     e.preventDefault();
     if (mailcheck == false && cellcheck == false) {
@@ -41,7 +51,8 @@ const Alerts = (props) => {
         alertData = {
           email: email,
           cell: cell,
-          amount: amount,
+          stamount: stamount,
+          endamount: endamount,
           message: message,
           lasttxn: today,
           accessToken: props.location.state.accessToken,
@@ -51,7 +62,9 @@ const Alerts = (props) => {
       } else if (mailcheck) {
         alertData = {
           email: email,
-          amount: amount,
+
+          stamount: stamount,
+          endamount: endamount,
           message: message,
           lasttxn: today,
           accessToken: props.location.state.accessToken,
@@ -61,7 +74,9 @@ const Alerts = (props) => {
       } else if (cellcheck) {
         alertData = {
           cell: cell,
-          amount: amount,
+
+          stamount: stamount,
+          endamount: endamount,
           message: message,
           lasttxn: today,
           accessToken: props.location.state.accessToken,
@@ -102,22 +117,35 @@ const Alerts = (props) => {
           </span>
           <br />
           <br />
-          <b>Amount:</b> <br />
-          <input
+          <b>Amount range:</b> <br />
+          <div
             style={{
-              width: "500px",
-              border: "2px solid #00b050",
+              width: "40%",
+              flex: "1",
+              display: "flex",
+              justifyContent: "space-between",
             }}
-            required
-            type="text"
-            name="amount"
-            placeholder="$1500"
-            value={amount != -1 ? amount : ""}
-            onChange={(e) => setAmount(e.target.value)}
-          />
+          >
+            <input
+              type="number"
+              name="stamount"
+              placeholder="Starting amount"
+              style={{ border: "2px solid #00b050" }}
+              onChange={(e) => {
+                setStamount(e.target.value);
+              }}
+            />
+            <input
+              type="number"
+              name="endamount"
+              placeholder="Ending amount"
+              style={{ border: "2px solid #00b050" }}
+              onChange={(e) => {
+                setEndamount(e.target.value);
+              }}
+            />
+          </div>
           <br />
-          <br></br>
-          <br></br>
           2) Get notified when a bank deposit includes the following
           description: <br />
           <br />

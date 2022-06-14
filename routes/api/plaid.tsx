@@ -31,19 +31,18 @@ const configuration = new Configuration({
   basePath: PlaidEnvironments["development"],
   baseOptions: {
     headers: {
-      "PLAID-CLIENT-ID": "62440a71a1f92500132351e4",
-      "PLAID-SECRET": "ec86bb15ef5d21de23bfdc6d65c22f",
+      "PLAID-CLIENT-ID": "62440a7",
+      "PLAID-SECRET": "4bef8b941",
     },
   },
 });
-
 const client = new PlaidApi(configuration);
 
 var PUBLIC_TOKEN = null;
 var ACCESS_TOKEN = null;
 var ITEM_ID = null;
-const accountSid = "AC99";
-const authToken = "9754d8f8-d9c0-4b5f-b8d7-b8f8f8f8f8f8";
+const accountSid = "AC20e8b8d0f56b401c";
+const authToken = "9754943ecfabd";
 const twclient = require("twilio")(accountSid, authToken);
 // @route GET api/plaid/accounts
 // @desc Get all accounts linked with plaid for a specific user
@@ -137,7 +136,7 @@ router.post(
     const now = moment();
     const today = now.format("YYYY-MM-DD");
     const thirtyDaysAgo = now.subtract(30, "days").format("YYYY-MM-DD");
-
+    const twoYearsAgo = now.subtract(2, "years").format("YYYY-MM-DD");
     let transactions = [];
 
     const accounts = req.body;
@@ -148,8 +147,11 @@ router.post(
         const institutionName = account.institutionName;
         const txnreq = {
           access_token: ACCESS_TOKEN,
-          start_date: thirtyDaysAgo,
+          start_date: twoYearsAgo,
           end_date: today,
+          options: {
+            count: 500,
+          },
         };
         client
           .transactionsGet(txnreq)
@@ -253,10 +255,12 @@ router.post(
     client
       .transactionsGet(txnreq)
       .then((response) => {
+        var alltranx = [];
         //console.log(response); response.data.transactions = an array of transaction objects
         let transaction1 = response.data.transactions;
         for (var i = 0; i < transaction1.length; i++) {
           const curTxn = {
+            _id: transaction1[i].transaction_id,
             accountId: req.body.accId,
             accessToken: req.body.accessTkn,
             accountname: req.body.acName,
@@ -265,11 +269,18 @@ router.post(
             txndate: transaction1[i].date,
             category: transaction1[i].category[0],
           };
-          try {
-            txncoll.update(curTxn, { $set: curTxn }, { upsert: true });
-          } catch (err) {
-            console.log(err);
-          }
+          alltranx.push(curTxn);
+          // try {
+          //   txncoll.update(curTxn, { $set: curTxn }, { upsert: true });
+          // } catch (err) {
+          //   console.log(err);
+          // }
+        }
+        // bulk insert all transactions at once
+        try {
+          txncoll.insertMany(alltranx);
+        } catch (err) {
+          console.log(err.message);
         }
       })
       .catch((err) => console.log(err));
@@ -308,9 +319,13 @@ cron.schedule("* * * * *", async () => {
         // now here we have an array of alerts and we have to perform the twilio things for each of them
         const now = moment();
         const today = now.format("YYYY-MM-DD");
+
         for (var ind = 0; ind < alert.length; ind++) {
+          var prevCount = -1;
+
           const curAccessToken = alert[ind].accessToken;
-          const AMOUNT = alert[ind].amount;
+          const STAMOUNT = alert[ind].stamount;
+          const ENDAMOUNT = alert[ind].endamount;
           const MSG = alert[ind].message;
           const EMAIL = alert[ind].email;
           const CELL = alert[ind].cell;
@@ -322,17 +337,18 @@ cron.schedule("* * * * *", async () => {
           // get the recent transaction and then check if there is any newer transaction
           txncoll
             .find({ accessToken: curAccessToken })
-            .limit(1)
             .sort({ txndate: -1 })
+            .limit(50) // may have to change this limit if dailys txn>50
             .toArray()
             .then((rtxn) => {
+              // rtxn contains transactions sorted by date
               recentTxn = rtxn[0];
               const txnreq = {
                 access_token: curAccessToken,
                 start_date: recentTxn.txndate,
                 end_date: today,
               };
-              console.log(curAccessToken);
+              //console.log(recentTxn);
               client
                 .transactionsGet(txnreq)
                 .then((response) => {
@@ -346,13 +362,20 @@ cron.schedule("* * * * *", async () => {
                   ) {
                     var curTXTBODY = TXTBODY;
                     var curMLBODY = MLBODY;
-                    if (
-                      transactions[counter].name === recentTxn.name &&
-                      transactions[counter].amount === recentTxn.amount
-                    ) {
-                      break; // if we encounter previously seen transaction then we break out of the loop
-                    }
                     var transaction = transactions[counter];
+
+                    // here we have to make a check if the transactions[counter] has already been seen before
+                    var alreadySeen = false;
+                    for (var cnt = 0; cnt < 40; cnt++) {
+                      if (rtxn[cnt]._id === transaction.transaction_id) {
+                        alreadySeen = true;
+                        break;
+                      }
+                    }
+                    if (alreadySeen) break;
+
+                    console.log(recentTxn, transaction);
+                    console.log("E N D");
                     //console.log(transaction);
                     //console.log(transaction.amount);
                     curTXTBODY = curTXTBODY.replace(
@@ -381,7 +404,8 @@ cron.schedule("* * * * *", async () => {
                     );
 
                     if (
-                      Math.abs(transaction.amount) >= AMOUNT ||
+                      (Math.abs(transaction.amount) >= STAMOUNT &&
+                        Math.abs(transaction.amount) <= ENDAMOUNT) ||
                       transaction.name.indexOf(MSG) != -1
                     ) {
                       if (CELL !== undefined) {
@@ -415,7 +439,7 @@ cron.schedule("* * * * *", async () => {
                     }
                     // add the new transactions to the database
                     const newTxn = {
-                      userId: recentTxn.userId,
+                      _id: transaction.transaction_id,
                       accountId: recentTxn.accountId,
                       accessToken: recentTxn.accessToken,
                       name: transaction.name,
@@ -424,7 +448,11 @@ cron.schedule("* * * * *", async () => {
                       accountname: recentTxn.accountname,
                       category: transaction.category[0],
                     };
-                    txncoll.insertOne(newTxn);
+                    try {
+                      txncoll.insert(newTxn);
+                    } catch (err) {
+                      console.log(err.message);
+                    }
                   }
                 })
                 .catch((err) =>
